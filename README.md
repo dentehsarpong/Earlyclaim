@@ -184,3 +184,4 @@ Open **[http://localhost:5000](http://localhost:5000)** to view the production a
 - **Phone / WhatsApp**: `+233 53 027 9271` (`0530279271`)
 - **Developer**: TECH ON DEMAND
 - **Copyright**: © 2026 TECH ON DEMAND. All rights reserved.
+# EARLYCLAIM
