@@ -2,6 +2,8 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const AuthContext = createContext();
 
+const API_URL = process.env.REACT_APP_API_URL || '';
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(() => localStorage.getItem('earlyclaim_token') || null);
@@ -11,7 +13,7 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     if (token) {
-      fetch('/api/auth/me', {
+      fetch(`${API_URL}/api/auth/me`, {
         headers: { Authorization: `Bearer ${token}` }
       })
         .then(res => res.json())
@@ -30,7 +32,7 @@ export const AuthProvider = ({ children }) => {
   }, [token]);
 
   const login = async (email, password) => {
-    const res = await fetch('/api/auth/login', {
+    const res = await fetch(`${API_URL}/api/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password })
@@ -47,7 +49,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const register = async (name, email, password, phone, referralCode) => {
-    const res = await fetch('/api/auth/register', {
+    const res = await fetch(`${API_URL}/api/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, email, password, phone, referralCode })
@@ -64,7 +66,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const googleLogin = async (email, name) => {
-    const res = await fetch('/api/auth/google', {
+    const res = await fetch(`${API_URL}/api/auth/google`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, name, googleId: 'goog_' + Date.now() })
@@ -92,7 +94,7 @@ export const AuthProvider = ({ children }) => {
       return false;
     }
     try {
-      const res = await fetch('/api/auth/wishlist/toggle', {
+      const res = await fetch(`${API_URL}/api/auth/wishlist/toggle`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

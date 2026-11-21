@@ -7,6 +7,8 @@ import { useAuth } from './AuthContext';
 
 const NotificationContext = createContext();
 
+const API_URL = process.env.REACT_APP_API_URL || '';
+
 export const NotificationProvider = ({ children }) => {
   const { token, user } = useAuth();
 
@@ -26,7 +28,7 @@ export const NotificationProvider = ({ children }) => {
   const fetchBuyerNotifications = useCallback(async () => {
     if (!token) return;
     try {
-      const res = await fetch('/api/notifications/my', {
+      const res = await fetch(`${API_URL}/api/notifications/my`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
@@ -40,7 +42,7 @@ export const NotificationProvider = ({ children }) => {
   const fetchAdminNotifications = useCallback(async () => {
     if (!token || !isAdmin) return;
     try {
-      const res = await fetch('/api/notifications/admin', {
+      const res = await fetch(`${API_URL}/api/notifications/admin`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
@@ -61,7 +63,7 @@ export const NotificationProvider = ({ children }) => {
 
     // SSE connection
     try {
-      const sse = new EventSource(`/api/notifications/stream?token=${token}`);
+      const sse = new EventSource(`${API_URL}/api/notifications/stream?token=${token}`);
       sseRef.current = sse;
 
       sse.addEventListener('notification', () => {
@@ -96,7 +98,7 @@ export const NotificationProvider = ({ children }) => {
   const markBuyerRead = async (id) => {
     if (!token) return;
     try {
-      await fetch(`/api/notifications/my/${id}/read`, {
+      await fetch(`${API_URL}/api/notifications/my/${id}/read`, {
         method: 'PUT',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -108,7 +110,7 @@ export const NotificationProvider = ({ children }) => {
   const markAllBuyerRead = async () => {
     if (!token) return;
     try {
-      await fetch('/api/notifications/my/read-all', {
+      await fetch(`${API_URL}/api/notifications/my/read-all`, {
         method: 'PUT',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -120,7 +122,7 @@ export const NotificationProvider = ({ children }) => {
   const markAdminRead = async (id) => {
     if (!token) return;
     try {
-      await fetch(`/api/notifications/admin/${id}/read`, {
+      await fetch(`${API_URL}/api/notifications/admin/${id}/read`, {
         method: 'PUT',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -132,7 +134,7 @@ export const NotificationProvider = ({ children }) => {
   const markAllAdminRead = async () => {
     if (!token) return;
     try {
-      await fetch('/api/notifications/admin/read-all', {
+      await fetch(`${API_URL}/api/notifications/admin/read-all`, {
         method: 'PUT',
         headers: { Authorization: `Bearer ${token}` }
       });

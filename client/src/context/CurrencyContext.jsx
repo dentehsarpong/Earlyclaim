@@ -2,6 +2,8 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const CurrencyContext = createContext();
 
+const API_URL = process.env.REACT_APP_API_URL || '';
+
 export const CurrencyProvider = ({ children }) => {
   const [currency, setCurrency] = useState(() => {
     return localStorage.getItem('earlyclaim_currency') || 'GHS';
@@ -14,7 +16,7 @@ export const CurrencyProvider = ({ children }) => {
 
   // Fetch live or configured rates from backend
   useEffect(() => {
-    fetch('/api/rates')
+    fetch(`${API_URL}/api/rates`)
       .then(res => res.json())
       .then(data => {
         if (data.success && data.USD_TO_GHS) {

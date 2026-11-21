@@ -120,15 +120,15 @@ export default function AdminDashboardPage() {
     setLoading(true);
 
     Promise.all([
-      fetch('/api/admin/stats', { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
-      fetch('/api/admin/orders', { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
-      fetch('/api/admin/requests', { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
-      fetch('/api/products?limit=200', { headers: { 'x-admin': 'true', Authorization: `Bearer ${token}` } }).then(r => r.json()),
-      fetch('/api/admin/customers', { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
-      fetch('/api/admin/categories', { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
-      fetch('/api/admin/banners/all', { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
-      fetch('/api/admin/shipping-rates', { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
-      fetch('/api/admin/audit-log', { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json())
+      fetch(`${process.env.REACT_APP_API_URL || ''}/api/admin/stats`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
+      fetch(`${process.env.REACT_APP_API_URL || ''}/api/admin/orders`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
+      fetch(`${process.env.REACT_APP_API_URL || ''}/api/admin/requests`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
+      fetch(`${process.env.REACT_APP_API_URL || ''}/api/products?limit=200`, { headers: { 'x-admin': 'true', Authorization: `Bearer ${token}` } }).then(r => r.json()),
+      fetch(`${process.env.REACT_APP_API_URL || ''}/api/admin/customers`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
+      fetch(`${process.env.REACT_APP_API_URL || ''}/api/admin/categories`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
+      fetch(`${process.env.REACT_APP_API_URL || ''}/api/admin/banners/all`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
+      fetch(`${process.env.REACT_APP_API_URL || ''}/api/admin/shipping-rates`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
+      fetch(`${process.env.REACT_APP_API_URL || ''}/api/admin/audit-log`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json())
     ])
       .then(([statsRes, ordersRes, requestsRes, productsRes, customersRes, catRes, banRes, ratesRes, auditRes]) => {
         if (statsRes.success) setStats(statsRes.stats);
@@ -159,7 +159,7 @@ export default function AdminDashboardPage() {
   // Handle Mark Orders Viewed
   const handleMarkOrdersViewed = async () => {
     try {
-      const res = await fetch('/api/admin/orders/mark-viewed', {
+      const res = await fetch(`${process.env.REACT_APP_API_URL || ''}/api/admin/orders/mark-viewed`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({})
@@ -187,7 +187,7 @@ export default function AdminDashboardPage() {
     if (!statusModalOrder || !targetStatus) return;
     setStatusUpdating(statusModalOrder.id);
     try {
-      const res = await fetch(`/api/admin/orders/${statusModalOrder.id}/status`, {
+      const res = await fetch(`${process.env.REACT_APP_API_URL || ''}/api/admin/orders/${statusModalOrder.id}/status`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -218,7 +218,7 @@ export default function AdminDashboardPage() {
   const handleSaveOrderEdits = async () => {
     if (!editOrderModal) return;
     try {
-      const res = await fetch(`/api/admin/orders/${editOrderModal.id}`, {
+      const res = await fetch(`${process.env.REACT_APP_API_URL || ''}/api/admin/orders/${editOrderModal.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -246,7 +246,7 @@ export default function AdminDashboardPage() {
   // Confirm manual payment
   const handleConfirmPayment = async (orderId) => {
     try {
-      const res = await fetch(`/api/admin/orders/${orderId}/confirm-payment`, {
+      const res = await fetch(`${process.env.REACT_APP_API_URL || ''}/api/admin/orders/${orderId}/confirm-payment`, {
         method: 'PUT',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -333,7 +333,7 @@ export default function AdminDashboardPage() {
     };
 
     try {
-      const url = editingProductId ? `/api/products/${editingProductId}` : '/api/products';
+      const url = editingProductId ? `${process.env.REACT_APP_API_URL || ''}/api/products/${editingProductId}` : `${process.env.REACT_APP_API_URL || ''}/api/products`;
       const method = editingProductId ? 'PUT' : 'POST';
 
       const res = await fetch(url, {
@@ -361,7 +361,7 @@ export default function AdminDashboardPage() {
   const handleArchiveProduct = async (id) => {
     if (!confirm('Archive this product? It will be hidden from buyers.')) return;
     try {
-      const res = await fetch(`/api/products/${id}/archive`, {
+      const res = await fetch(`${process.env.REACT_APP_API_URL || ''}/api/products/${id}/archive`, {
         method: 'PUT',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -379,7 +379,7 @@ export default function AdminDashboardPage() {
   const handleDeleteProduct = async (prodId) => {
     if (!confirm('Are you sure you want to permanently delete this product?')) return;
     try {
-      const res = await fetch(`/api/products/${prodId}`, {
+      const res = await fetch(`${process.env.REACT_APP_API_URL || ''}/api/products/${prodId}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -423,7 +423,7 @@ export default function AdminDashboardPage() {
     const reader = new FileReader();
     reader.onload = async () => {
       try {
-        const res = await fetch('/api/products/upload-image', {
+        const res = await fetch(`${process.env.REACT_APP_API_URL || ''}/api/products/upload-image`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -482,7 +482,7 @@ export default function AdminDashboardPage() {
     if (!verifyModalReq) return;
     setVerifyUpdating(true);
     try {
-      const res = await fetch(`/api/admin/requests/${verifyModalReq.id}`, {
+      const res = await fetch(`${process.env.REACT_APP_API_URL || ''}/api/admin/requests/${verifyModalReq.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -544,7 +544,7 @@ export default function AdminDashboardPage() {
     e.preventDefault();
     if (!newCatName.trim()) return;
     try {
-      const res = await fetch('/api/admin/categories', {
+      const res = await fetch(`${process.env.REACT_APP_API_URL || ''}/api/admin/categories`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ name: newCatName.trim() })
@@ -563,7 +563,7 @@ export default function AdminDashboardPage() {
   const handleDeleteCategory = async (id) => {
     if (!confirm('Delete this category?')) return;
     try {
-      await fetch(`/api/admin/categories/${id}`, {
+      await fetch(`${process.env.REACT_APP_API_URL || ''}/api/admin/categories/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -582,7 +582,7 @@ export default function AdminDashboardPage() {
       return;
     }
     try {
-      const res = await fetch('/api/admin/banners', {
+      const res = await fetch(`${process.env.REACT_APP_API_URL || ''}/api/admin/banners`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify(newBanner)
@@ -601,7 +601,7 @@ export default function AdminDashboardPage() {
   const handleDeleteBanner = async (id) => {
     if (!confirm('Delete this banner?')) return;
     try {
-      await fetch(`/api/admin/banners/${id}`, {
+      await fetch(`${process.env.REACT_APP_API_URL || ''}/api/admin/banners/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -616,7 +616,7 @@ export default function AdminDashboardPage() {
   const handleSaveShippingRates = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch('/api/admin/shipping-rates', {
+      const res = await fetch(`${process.env.REACT_APP_API_URL || ''}/api/admin/shipping-rates`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify(shippingRates)
