@@ -1,0 +1,17 @@
+{
+  "name": "earlyclaim-app",
+  "version": "1.0.0",
+  "description": "EARLYCLAIM - Luxury Pre-Order & Shopping Agent Platform",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "server": "cd server && node index.js",
+    "client": "cd client && npm run dev",
+    "seed": "cd server && node seed.js",
+    "build": "cd client && npm run build",
+    "start": "cd server && NODE_ENV=production node index.js"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}
