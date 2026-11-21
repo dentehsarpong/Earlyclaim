@@ -1,5 +1,6 @@
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
 const db = require('../db');
 const { requireAdmin } = require('../middleware/auth');
@@ -9,7 +10,6 @@ let upload;
 try {
   const multer = require('multer');
   const uploadsDir = path.join(__dirname, '../../uploads');
-  const fs = require('fs');
   if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
 
   const storage = multer.diskStorage({
@@ -152,6 +152,49 @@ router.get('/:idOrSlug', (req, res) => {
     res.json({ success: true, product, related });
   } catch (err) {
     res.status(500).json({ success: false, message: 'Failed to fetch product' });
+  }
+});
+
+// Admin: Upload image via base64 data URL
+router.post('/upload-image', requireAdmin, (req, res) => {
+  try {
+    const { dataUrl, filename } = req.body;
+    if (!dataUrl) {
+      return res.status(400).json({ success: false, message: 'Image data URL is required' });
+    }
+
+    const fs = require('fs');
+    const uploadsDir = path.join(__dirname, '../../uploads');
+    if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
+
+    // Extract base64 and mime
+    const matches = dataUrl.match(/^data:image\/([a-zA-Z0-9+.-]+);base64,(.+)$/);
+    if (!matches) {
+      return res.status(400).json({ success: false, message: 'Invalid base64 image data URL' });
+    }
+
+    const ext = matches[1].replace('jpeg', 'jpg');
+    const base64Data = matches[2];
+    const buffer = Buffer.from(base64Data, 'base64');
+
+    // Limit to 10MB
+    if (buffer.length > 10 * 1024 * 1024) {
+      return res.status(400).json({ success: false, message: 'File size exceeds 10MB limit' });
+    }
+
+    const uniqueName = `${uuidv4()}.${ext}`;
+    const filePath = path.join(uploadsDir, uniqueName);
+    fs.writeFileSync(filePath, buffer);
+
+    const publicUrl = `/uploads/${uniqueName}`;
+    res.json({
+      success: true,
+      url: publicUrl,
+      message: 'Image uploaded successfully'
+    });
+  } catch (err) {
+    console.error('Base64 upload error:', err);
+    res.status(500).json({ success: false, message: 'Failed to save uploaded image' });
   }
 });
 

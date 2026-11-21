@@ -42,6 +42,7 @@ router.post('/', optionalToken, (req, res) => {
       customerEmail: customerEmail || (req.user ? req.user.email : 'customer@earlyclaim.com'),
       customerPhone: customerPhone || (req.user ? req.user.phone : '0530279271'),
       url: url.trim(),
+      imageUrl: req.body.imageUrl || null, // Added imageUrl
       productName: productName || 'Custom Shopping Agent Request',
       category: category || 'Designer Brands',
       size: size || 'Standard',

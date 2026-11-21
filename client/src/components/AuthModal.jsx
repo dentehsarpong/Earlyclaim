@@ -36,17 +36,6 @@ export default function AuthModal() {
     }
   };
 
-  const handleQuickFill = (accType) => {
-    if (accType === 'admin') {
-      setEmail('admin@earlyclaim.com');
-      setPassword('admin123');
-      setTab('login');
-    } else {
-      setEmail('demo@earlyclaim.com');
-      setPassword('demo123');
-      setTab('login');
-    }
-  };
 
   const handleGoogleMock = async () => {
     setLoading(true);
@@ -104,26 +93,6 @@ export default function AuthModal() {
           </button>
         </div>
 
-        {/* Quick Demo Acc Pill Buttons */}
-        <div className="mb-4 p-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 flex items-center justify-between text-xs">
-          <span className="text-[11px] font-medium text-zinc-500">Quick Test:</span>
-          <div className="flex gap-1.5">
-            <button
-              type="button"
-              onClick={() => handleQuickFill('admin')}
-              className="px-2.5 py-1 rounded-lg bg-black dark:bg-white text-white dark:text-black text-[10px] font-bold hover:opacity-90"
-            >
-              Fill Admin
-            </button>
-            <button
-              type="button"
-              onClick={() => handleQuickFill('demo')}
-              className="px-2.5 py-1 rounded-lg bg-zinc-200 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 text-[10px] font-bold hover:bg-zinc-300"
-            >
-              Fill Customer
-            </button>
-          </div>
-        </div>
 
         {error && (
           <div className="mb-4 p-3 rounded-xl bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800 text-xs text-red-600 dark:text-red-400">

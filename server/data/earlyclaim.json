@@ -1,38 +1,6 @@
 {
   "products": [
     {
-      "id": "prod-8f09503f",
-      "name": "NIKE streetware",
-      "slug": "nike-streetware",
-      "category": "Designer Brands",
-      "subCategory": "Low Top",
-      "gender": "Men's",
-      "brand": "Nike",
-      "priceGHS": 70,
-      "priceUSD": 5,
-      "depositPercent": 50,
-      "estimatedDays": "10–18 Days",
-      "tag": "New Arrivals",
-      "isFeatured": true,
-      "rating": 5,
-      "reviewsCount": 1,
-      "images": [
-        "https://pin.it/4mgdXbctW"
-      ],
-      "sizes": [
-        "US 8",
-        "US 9",
-        "US 10",
-        "US 11"
-      ],
-      "colors": [
-        "Black / White"
-      ],
-      "description": "Authentic designer pre-order handled with early claim priority.",
-      "shipFromCountry": "US",
-      "visibility": "published"
-    },
-    {
       "id": "snk-001",
       "name": "Air Jordan 1 Retro High OG 'Lost & Found'",
       "slug": "air-jordan-1-retro-high-og-lost-and-found",
@@ -239,36 +207,6 @@
         "Black Cerachrom / Oystersteel"
       ],
       "description": "The archetypal divers' watch. Unidirectional Cerachrom bezel in black ceramic, luminous Chromalight display, caliber 3235 automatic movement with 70-hour power reserve. Full original box and papers.",
-      "shipFromCountry": "US",
-      "visibility": "published"
-    },
-    {
-      "id": "wat-002",
-      "name": "Audemars Piguet Royal Oak Selfwinding 41mm",
-      "slug": "audemars-piguet-royal-oak-41mm",
-      "category": "Watches",
-      "subCategory": "Haute Horlogerie",
-      "gender": "Men's",
-      "brand": "Audemars Piguet",
-      "priceGHS": 420000,
-      "priceUSD": 27000,
-      "depositPercent": 50,
-      "estimatedDays": "14–25 Days",
-      "tag": "Best Selection",
-      "isFeatured": true,
-      "rating": 5,
-      "reviewsCount": 9,
-      "images": [
-        "https://images.unsplash.com/photo-1547996160-71dfabbce5ed?auto=format&fit=crop&w=800&q=80",
-        "https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=800&q=80"
-      ],
-      "sizes": [
-        "41mm"
-      ],
-      "colors": [
-        "Grande Tapisserie Silver-Tone / Steel"
-      ],
-      "description": "Stainless steel case with iconic octagonal bezel held by 8 hexagonal white gold screws, 'Grande Tapisserie' patterned dial, and integrated bracelet.",
       "shipFromCountry": "US",
       "visibility": "published"
     },
@@ -495,41 +433,6 @@
         "Vintage Indigo / Black Leather Cross Patches"
       ],
       "description": "Reconstructed vintage Levi's 501 base with hand-stitched leather cemetery cross patches, 925 sterling silver hardware buttons and scroll rivet accents on back pocket.",
-      "shipFromCountry": "US",
-      "visibility": "published"
-    },
-    {
-      "id": "jns-002",
-      "name": "Amiri MX1 Leather Patch Distressed Skinny Jeans",
-      "slug": "amiri-mx1-leather-patch-skinny-jeans",
-      "category": "Jeans",
-      "subCategory": "Distressed Skinny",
-      "gender": "Men's",
-      "brand": "Amiri",
-      "priceGHS": 17500,
-      "priceUSD": 1130,
-      "depositPercent": 50,
-      "estimatedDays": "10–16 Days",
-      "tag": "Men's Zone",
-      "isFeatured": true,
-      "rating": 4.8,
-      "reviewsCount": 23,
-      "images": [
-        "https://images.unsplash.com/photo-1542272604-780c96856592?auto=format&fit=crop&w=800&q=80",
-        "https://images.unsplash.com/photo-1604176354204-9268737828e4?auto=format&fit=crop&w=800&q=80"
-      ],
-      "sizes": [
-        "30",
-        "31",
-        "32",
-        "33",
-        "34",
-        "36"
-      ],
-      "colors": [
-        "Clay Indigo / Ribbed Black Leather Insets"
-      ],
-      "description": "Italian stretch denim meticulously hand-distressed in Los Angeles with ribbed moto leather knee patches, 3D whisker abrasions, and custom silver hardware.",
       "shipFromCountry": "US",
       "visibility": "published"
     },
@@ -1136,6 +1039,68 @@
   ],
   "orders": [
     {
+      "id": "ord-58342dc9",
+      "orderNumber": "EC-10756",
+      "userId": "usr-3a10e779",
+      "customerName": "Denteh Sarpong",
+      "customerEmail": "dentehsarpong87@gmail.com",
+      "customerPhone": "05302792671",
+      "items": [
+        {
+          "productId": "bag-004",
+          "name": "Rimowa Original Cabin Aluminum Suitcase",
+          "image": "https://images.unsplash.com/photo-1565026057447-bc90a3dceb87?auto=format&fit=crop&w=800&q=80",
+          "size": "55 x 40 x 23 cm (35L)",
+          "color": "Matte Black Anodised Aluminum",
+          "priceGHS": 21500,
+          "priceUSD": 1390,
+          "quantity": 1
+        }
+      ],
+      "totalGHS": 21500,
+      "totalUSD": 1390,
+      "shippingCostGHS": 300,
+      "shippingMethod": "sea",
+      "shippingLabel": "Sea Freight (~6–8 weeks)",
+      "estimatedDelivery": "6–8 weeks",
+      "depositType": "deposit_50",
+      "amountDueGHS": 10900,
+      "depositPaidGHS": 10900,
+      "remainingBalanceGHS": 10900,
+      "paymentMethod": "paystack_momo",
+      "paymentStatus": "paid",
+      "transactionReference": "PSTK_YXOHFZKK",
+      "status": "Purchased",
+      "adminViewed": false,
+      "adminNotes": "",
+      "notes": "",
+      "timeline": [
+        {
+          "title": "Pre-ordered",
+          "date": "2026-11-21 14:58",
+          "note": "Pre-order confirmed. Sea Freight (~6–8 weeks) selected.",
+          "adminId": null,
+          "timestamp": "2026-11-21T14:58:34.971Z"
+        },
+        {
+          "title": "Purchased",
+          "date": "2026-11-21 15:00",
+          "note": "Your items have been purchased and inspected by our agent.",
+          "adminId": "usr-admin-01",
+          "timestamp": "2026-11-21T15:00:37.848Z"
+        }
+      ],
+      "shippingAddress": {
+        "fullName": "Denteh Sarpong",
+        "phone": "05302792671",
+        "region": "Greater Accra",
+        "city": "Accra",
+        "street": "Madina",
+        "gpsAddress": ""
+      },
+      "createdAt": "2026-11-21T14:58:34.971Z"
+    },
+    {
       "id": "ord-d41f5569",
       "orderNumber": "EC-41640",
       "userId": "usr-3a10e779",
@@ -1278,6 +1243,46 @@
   ],
   "customRequests": [
     {
+      "id": "req-bcfa0288",
+      "requestNumber": "PB-95572",
+      "userId": null,
+      "customerName": "Denteh Sarpong",
+      "customerEmail": "dentehsarpong87@gmail.com",
+      "customerPhone": "05302792671",
+      "url": "https://pin.it/2qfqOBrXo",
+      "productName": "Nike Hoodie",
+      "category": "Designer Brands",
+      "size": "Medium",
+      "color": "Black",
+      "targetPriceUSD": 200,
+      "quotedPriceGHS": 3100,
+      "quotedPriceUSD": 200,
+      "depositRequiredGHS": 1550,
+      "status": "Pending Review",
+      "notes": "",
+      "createdAt": "2026-11-21T15:10:32.320Z"
+    },
+    {
+      "id": "req-37506922",
+      "requestNumber": "PB-92407",
+      "userId": null,
+      "customerName": "EarlyClaim Administrator",
+      "customerEmail": "admin@earlyclaim.com",
+      "customerPhone": "0530279271",
+      "url": "https://pin.it/2qfqOBrXo",
+      "productName": "hoodie",
+      "category": "Designer Brands",
+      "size": "Medium",
+      "color": "Black",
+      "targetPriceUSD": 250,
+      "quotedPriceGHS": 3875,
+      "quotedPriceUSD": 250,
+      "depositRequiredGHS": 1938,
+      "status": "Pending Review",
+      "notes": "",
+      "createdAt": "2026-11-21T15:05:16.078Z"
+    },
+    {
       "id": "req-2001",
       "requestNumber": "PB-88412",
       "userId": "usr-demo-01",
@@ -1317,6 +1322,17 @@
     "lastUpdated": "2026-11-20T03:05:11.756Z"
   },
   "notifications": [
+    {
+      "id": "0e96baf6-8b72-45bb-be1e-eb05d54e2dd6",
+      "userId": "usr-3a10e779",
+      "orderId": "ord-58342dc9",
+      "orderNumber": "EC-10756",
+      "status": "Purchased",
+      "title": "Order EC-10756 — Purchased",
+      "message": "Your items have been purchased and inspected by our agent.",
+      "read": false,
+      "createdAt": "2026-11-21T15:00:37.848Z"
+    },
     {
       "id": "cd74f309-f37d-492a-ad65-6e6373fd9d99",
       "orderId": "test-ord-05",
@@ -1360,6 +1376,76 @@
     }
   ],
   "adminNotifications": [
+    {
+      "id": "1ea69264-f302-4b29-b901-737fae04a29d",
+      "type": "new_order",
+      "orderId": "test-ord-new",
+      "orderNumber": "EC-ALERT01",
+      "title": "New Pre-Order: EC-ALERT01",
+      "message": "Akosua Mensah placed a new order for 1 item(s). Total: GH₵5,200.",
+      "read": false,
+      "createdAt": "2026-11-21T15:29:03.846Z"
+    },
+    {
+      "id": "758c740e-d7ed-4172-8f00-3c479c91fd88",
+      "type": "status_change",
+      "orderId": "test-ord-05",
+      "orderNumber": "EC-TEST05",
+      "title": "Order EC-TEST05 updated to In Transit",
+      "message": "Status changed by admin for undefined.",
+      "read": false,
+      "createdAt": "2026-11-21T15:29:03.837Z"
+    },
+    {
+      "id": "9e9f3f49-c2e2-4bb5-ab5e-44f70ddfe994",
+      "type": "status_change",
+      "orderId": "test-ord-04",
+      "orderNumber": "EC-TEST04",
+      "title": "Order EC-TEST04 updated to In Transit",
+      "message": "Status changed by admin for undefined.",
+      "read": false,
+      "createdAt": "2026-11-21T15:29:03.834Z"
+    },
+    {
+      "id": "6ba317b1-5ff5-46ff-960f-a21d9f0c55ab",
+      "type": "status_change",
+      "orderId": "test-ord-03",
+      "orderNumber": "EC-TEST03",
+      "title": "Order EC-TEST03 updated to Purchased",
+      "message": "Status changed by admin for undefined.",
+      "read": false,
+      "createdAt": "2026-11-21T15:29:03.830Z"
+    },
+    {
+      "id": "4a7b664d-b868-487c-bd45-63ca78a3ed5d",
+      "type": "status_change",
+      "orderId": "test-ord-01",
+      "orderNumber": "EC-TEST01",
+      "title": "Order EC-TEST01 updated to Purchased",
+      "message": "Status changed by admin for Test Buyer.",
+      "read": false,
+      "createdAt": "2026-11-21T15:29:03.781Z"
+    },
+    {
+      "id": "a3fdec3e-46e7-4aaa-9521-eb4854808f73",
+      "type": "status_change",
+      "orderId": "ord-58342dc9",
+      "orderNumber": "EC-10756",
+      "title": "Order EC-10756 updated to Purchased",
+      "message": "Status changed by admin for Denteh Sarpong.",
+      "read": true,
+      "createdAt": "2026-11-21T15:00:37.848Z"
+    },
+    {
+      "id": "d9352bd5-40b3-4f88-b503-316d04a42ca0",
+      "type": "new_order",
+      "orderId": "ord-58342dc9",
+      "orderNumber": "EC-10756",
+      "title": "New Pre-Order: EC-10756",
+      "message": "Denteh Sarpong placed a new order for 1 item(s). Total: GH₵21,500.",
+      "read": false,
+      "createdAt": "2026-11-21T14:58:34.993Z"
+    },
     {
       "id": "771d0048-16e7-43f1-9367-2913f0ea90b2",
       "type": "new_order",
@@ -1407,7 +1493,7 @@
       "orderNumber": "EC-TEST01",
       "title": "Order EC-TEST01 updated to Purchased",
       "message": "Status changed by admin for Test Buyer.",
-      "read": false,
+      "read": true,
       "createdAt": "2026-11-21T14:49:09.561Z"
     }
   ],
@@ -1468,22 +1554,152 @@
       "success": false,
       "via": [],
       "error": "Email not configured or failed"
+    },
+    {
+      "id": "2ae413eb-e9d8-4c79-919c-641e64036603",
+      "type": "admin_new_order",
+      "orderId": "ord-58342dc9",
+      "sentAt": "2026-11-21T14:58:35.001Z",
+      "success": false,
+      "via": [],
+      "error": "Email not configured or failed"
+    },
+    {
+      "id": "e8518af5-a5ac-4efa-9c00-10185441105b",
+      "type": "buyer_status_change",
+      "orderId": "ord-58342dc9",
+      "status": "Purchased",
+      "sentAt": "2026-11-21T15:00:37.848Z",
+      "success": false,
+      "via": [
+        "inApp"
+      ],
+      "error": "Email not configured or failed"
+    },
+    {
+      "id": "660f1b23-246d-43c0-bd3f-08f1da2f7c11",
+      "type": "buyer_status_change",
+      "orderId": "test-ord-01",
+      "status": "Purchased",
+      "sentAt": "2026-11-21T15:29:03.781Z",
+      "success": false,
+      "via": [
+        "inApp"
+      ],
+      "error": "Email not configured or failed"
+    },
+    {
+      "id": "43c8a8a4-7c51-4c7c-a697-873bcd80783f",
+      "type": "buyer_status_change",
+      "orderId": "test-ord-03",
+      "status": "Purchased",
+      "sentAt": "2026-11-21T15:29:03.830Z",
+      "success": false,
+      "via": [
+        "inApp"
+      ],
+      "error": "Email not configured or failed"
+    },
+    {
+      "id": "e5e84d8a-126a-4b41-a787-fdd3554b2fd8",
+      "type": "buyer_status_change",
+      "orderId": "test-ord-04",
+      "status": "In Transit",
+      "sentAt": "2026-11-21T15:29:03.834Z",
+      "success": false,
+      "via": [
+        "inApp"
+      ],
+      "error": "Email not configured or failed"
+    },
+    {
+      "id": "e78b3cbe-f319-4c62-9667-e48228462a94",
+      "type": "buyer_status_change",
+      "orderId": "test-ord-05",
+      "status": "In Transit",
+      "sentAt": "2026-11-21T15:29:03.837Z",
+      "success": false,
+      "via": [
+        "inApp"
+      ],
+      "error": "Email not configured or failed"
+    },
+    {
+      "id": "49392f12-b95b-418d-bf15-9b08d2f79816",
+      "type": "admin_new_order",
+      "orderId": "test-ord-new",
+      "sentAt": "2026-11-21T15:29:03.853Z",
+      "success": false,
+      "via": [],
+      "error": "Email not configured or failed"
     }
   ],
-  "productAuditLog": [],
+  "productAuditLog": [
+    {
+      "id": "91e9778f-6965-4751-867a-bd7a218eafb0",
+      "productId": "prod-8f09503f",
+      "adminId": "usr-admin-01",
+      "action": "delete",
+      "changes": {
+        "name": "NIKE streetware"
+      },
+      "timestamp": "2026-11-21T15:03:29.699Z"
+    },
+    {
+      "id": "7f796978-6c75-4f58-820a-eb9aec94acd1",
+      "productId": "prod-a69cd31e",
+      "adminId": "usr-admin-01",
+      "action": "create",
+      "changes": {
+        "name": "Nike Air",
+        "priceGHS": 300
+      },
+      "timestamp": "2026-11-21T16:26:02.593Z"
+    },
+    {
+      "id": "5ebfeeff-2d42-409b-94f3-468c8bc1799a",
+      "productId": "prod-a69cd31e",
+      "adminId": "usr-admin-01",
+      "action": "delete",
+      "changes": {
+        "name": "Nike Air"
+      },
+      "timestamp": "2026-11-21T19:20:39.255Z"
+    },
+    {
+      "id": "ad54bd5f-2da9-4645-89af-de2c3bd9533e",
+      "productId": "wat-002",
+      "adminId": "usr-admin-01",
+      "action": "delete",
+      "changes": {
+        "name": "Audemars Piguet Royal Oak Selfwinding 41mm"
+      },
+      "timestamp": "2026-11-21T19:20:46.650Z"
+    },
+    {
+      "id": "e0048b10-8f50-4a50-ac2b-b1f93fa8c8e1",
+      "productId": "jns-002",
+      "adminId": "usr-admin-01",
+      "action": "delete",
+      "changes": {
+        "name": "Amiri MX1 Leather Patch Distressed Skinny Jeans"
+      },
+      "timestamp": "2026-11-21T19:20:55.314Z"
+    }
+  ],
   "shippingRates": {
     "air": {
       "label": "Air Freight",
       "estimateWeeks": "2–3 weeks",
-      "ratePerKg": 45,
-      "minimumGHS": 150,
+      "ratePerKg": 22,
+      "minimumGHS": 300,
       "active": true
     },
     "sea": {
       "label": "Sea Freight",
       "estimateWeeks": "6–8 weeks",
-      "ratePerCBM": 1800,
-      "minimumGHS": 300,
+      "ratePerCBM": 305,
+      "minimumGHS": 150,
       "active": true
     }
   },
@@ -1535,18 +1751,44 @@
       "name": "Accessories",
       "slug": "accessories",
       "active": true
+    },
+    {
+      "id": "cat-eac096",
+      "name": "Hoodies",
+      "slug": "hoodies",
+      "active": true
     }
   ],
   "banners": [
     {
-      "id": "banner-001",
-      "title": "New Season Drops",
-      "subtitle": "Exclusive pre-orders from US, UK, Germany & Italy",
+      "id": "banner-8b927a",
+      "title": "Dark Legendary JORDAN",
+      "subtitle": "",
       "ctaText": "Shop Now",
       "ctaUrl": "/",
-      "image": "https://images.unsplash.com/photo-1552346154-21d32810aba3?auto=format&fit=crop&w=1600&q=80",
+      "image": "/uploads/1525d3ec-5c4e-47eb-b762-4359e53a1122.jpg",
       "active": true,
-      "order": 0
+      "order": 1
+    },
+    {
+      "id": "banner-8a2b7b",
+      "title": "Carolz SB Nike",
+      "subtitle": "",
+      "ctaText": "Shop Now",
+      "ctaUrl": "/",
+      "image": "/uploads/264f374e-b70b-494c-960e-c1c814d45ffc.jpg",
+      "active": true,
+      "order": 1
+    },
+    {
+      "id": "banner-e7b18c",
+      "title": "ADIDAS SUPERSTAR",
+      "subtitle": "",
+      "ctaText": "Explore",
+      "ctaUrl": "/",
+      "image": "/uploads/0f2109f5-1d88-42f9-a824-b3f618ca4f12.jpg",
+      "active": true,
+      "order": 2
     }
   ]
 }

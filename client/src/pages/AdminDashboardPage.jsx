@@ -94,7 +94,6 @@ export default function AdminDashboardPage() {
   const productsPerPage = 8;
 
   // Image Upload / Add URL state
-  const [newImageUrl, setNewImageUrl] = useState('');
   const [uploadFeedback, setUploadFeedback] = useState(null);
 
   // New Category State
@@ -395,13 +394,122 @@ export default function AdminDashboardPage() {
   };
 
   // Image Management in Modal
-  const handleAddImageUrl = () => {
-    if (!newImageUrl.trim()) return;
-    setProdForm(prev => ({
-      ...prev,
-      images: [...prev.images, newImageUrl.trim()]
-    }));
-    setNewImageUrl('');
+  const [uploadingFile, setUploadingFile] = useState(false);
+
+  // Paste & Buy Verification Modal state
+  const [verifyModalReq, setVerifyModalReq] = useState(null);
+  const [verifyQuotedGHS, setVerifyQuotedGHS] = useState('');
+  const [verifyDepositGHS, setVerifyDepositGHS] = useState('');
+  const [verifyStatus, setVerifyStatus] = useState('Approved');
+  const [verifyNotes, setVerifyNotes] = useState('');
+  const [verifyWeight, setVerifyWeight] = useState('');
+  const [verifyUpdating, setVerifyUpdating] = useState(false);
+
+  const handleFileUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      showToast('Please select a valid image file', 'error');
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      showToast('File size must be less than 10MB', 'error');
+      return;
+    }
+
+    setUploadingFile(true);
+    const reader = new FileReader();
+    reader.onload = async () => {
+      try {
+        const res = await fetch('/api/products/upload-image', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            dataUrl: reader.result,
+            filename: file.name
+          })
+        });
+        const data = await res.json();
+        if (data.success && data.url) {
+          setProdForm(prev => ({
+            ...prev,
+            images: [...prev.images, data.url]
+          }));
+          showToast('Image uploaded and preview ready!');
+        } else {
+          // If server upload failed, fallback to local base64 preview directly
+          setProdForm(prev => ({
+            ...prev,
+            images: [...prev.images, reader.result]
+          }));
+          showToast('Image loaded as local preview');
+        }
+      } catch (err) {
+        // Fallback to base64 preview
+        setProdForm(prev => ({
+          ...prev,
+          images: [...prev.images, reader.result]
+        }));
+        showToast('Image loaded as local preview');
+      } finally {
+        setUploadingFile(false);
+      }
+    };
+    reader.onerror = () => {
+      showToast('Failed to read image file', 'error');
+      setUploadingFile(false);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Open Verify Request Modal
+  const openVerifyRequest = (req) => {
+    setVerifyModalReq(req);
+    setVerifyQuotedGHS(req.quotedPriceGHS || '');
+    setVerifyDepositGHS(req.depositRequiredGHS || Math.round((req.quotedPriceGHS || 0) * 0.5));
+    setVerifyStatus(req.status === 'Pending Review' ? 'Approved' : req.status);
+    setVerifyNotes(req.adminNotes || '');
+    setVerifyWeight(req.itemWeightKg || '1.0');
+  };
+
+  // Save Verify Request Action
+  const handleSaveVerification = async (isApproved = true) => {
+    if (!verifyModalReq) return;
+    setVerifyUpdating(true);
+    try {
+      const res = await fetch(`/api/admin/requests/${verifyModalReq.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          status: isApproved ? verifyStatus : 'Rejected',
+          quotedPriceGHS: Number(verifyQuotedGHS),
+          depositRequiredGHS: Number(verifyDepositGHS),
+          adminNotes: verifyNotes,
+          itemWeightKg: Number(verifyWeight),
+          verified: isApproved
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        showToast(isApproved ? `Ticket #${verifyModalReq.requestNumber} verified & approved!` : `Ticket #${verifyModalReq.requestNumber} rejected`);
+        setVerifyModalReq(null);
+        fetchAdminData();
+      } else {
+        showToast(data.message || 'Verification update failed', 'error');
+      }
+    } catch {
+      showToast('Network error during verification', 'error');
+    } finally {
+      setVerifyUpdating(false);
+    }
   };
 
   const handleRemoveImage = (index) => {
@@ -528,7 +636,7 @@ export default function AdminDashboardPage() {
       <div className="min-h-screen py-24 text-center space-y-4">
         <h2 className="text-2xl font-black text-black dark:text-white">Admin Privileges Required</h2>
         <p className="text-xs text-zinc-500">
-          You must be logged in as an administrator. (Try demo admin: admin@earlyclaim.com / admin123)
+          You must be logged in as an administrator.
         </p>
         <button
           onClick={() => openAuthModal('login')}
@@ -1145,16 +1253,48 @@ export default function AdminDashboardPage() {
                     className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 p-2.5 rounded-xl text-black dark:text-white"
                   />
                 </div>
-                <div>
-                  <label className="font-bold uppercase text-[10px] text-zinc-400 block mb-1">Image URL</label>
-                  <input
-                    type="url"
-                    required
-                    placeholder="https://..."
-                    value={newBanner.image}
-                    onChange={(e) => setNewBanner({ ...newBanner, image: e.target.value })}
-                    className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 p-2.5 rounded-xl text-black dark:text-white"
-                  />
+                {/* Add Photo by Upload */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <label className="cursor-pointer px-4 py-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-black dark:text-white text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition">
+                      <ImageIcon className="w-4 h-4" />
+                      <span>{uploadingFile ? 'Uploading...' : 'Upload Banner Image'}</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          setUploadingFile(true);
+                          const reader = new FileReader();
+                          reader.onload = async () => {
+                            try {
+                              const res = await fetch('/api/products/upload-image', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                                body: JSON.stringify({ dataUrl: reader.result, filename: file.name })
+                              });
+                              const data = await res.json();
+                              if (data.success) {
+                                setNewBanner({ ...newBanner, image: data.url });
+                                showToast('Banner image uploaded');
+                              } else {
+                                showToast('Failed to upload', 'error');
+                              }
+                            } catch {
+                              showToast('Error uploading', 'error');
+                            } finally {
+                              setUploadingFile(false);
+                            }
+                          };
+                          reader.readAsDataURL(file);
+                        }}
+                        disabled={uploadingFile}
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
+                  {newBanner.image && <p className="text-[10px] text-green-600">Image uploaded.</p>}
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div>
@@ -1328,35 +1468,134 @@ export default function AdminDashboardPage() {
           </div>
         )}
 
-        {/* Tab 6: Paste & Buy Quotes */}
+        {/* Tab 6: Paste & Buy Verification & Quotes */}
         {activeTab === 'requests' && (
           <div className="space-y-4">
-            {requests.map((r) => (
-              <div key={r.id} className="p-5 rounded-3xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm space-y-3">
-                <div className="flex items-center justify-between pb-2 border-b border-zinc-100 dark:border-zinc-800">
-                  <div>
-                    <span className="text-[10px] font-bold uppercase text-zinc-400 font-mono">Ticket #{r.requestNumber}</span>
-                    <h4 className="font-black text-base text-black dark:text-white">{r.productName}</h4>
-                    <p className="text-xs text-zinc-500">Customer: {r.customerName} ({r.customerPhone})</p>
-                  </div>
-                  <span className="px-3 py-1 rounded-full bg-zinc-100 dark:bg-zinc-800 text-xs font-bold text-black dark:text-white">
-                    {r.status}
-                  </span>
-                </div>
-
-                <div className="space-y-2 text-xs">
-                  <p>
-                    <strong>Product Link:</strong>{' '}
-                    <a href={r.url} target="_blank" rel="noreferrer" className="text-blue-500 underline">
-                      {r.url}
-                    </a>
-                  </p>
-                  <p><strong>Size/Color:</strong> {r.size} • {r.color}</p>
-                  <p><strong>Customer Remarks:</strong> {r.notes || 'None'}</p>
-                  <p><strong>Quoted Price:</strong> {formatPrice(r.quotedPriceGHS)} (Deposit: {formatPrice(r.depositRequiredGHS)})</p>
-                </div>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-4 rounded-3xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
+              <div>
+                <h3 className="font-black text-sm uppercase text-black dark:text-white">
+                  Customer Paste & Buy Verification Desk
+                </h3>
+                <p className="text-xs text-zinc-500">
+                  Inspect customer links, verify item availability and authenticity, provide official quotes, and approve tickets.
+                </p>
               </div>
-            ))}
+              <span className="px-3 py-1 rounded-full bg-zinc-100 dark:bg-zinc-800 text-xs font-bold font-mono">
+                {requests.filter(r => r.status === 'Pending Review' || !r.verified).length} Awaiting Verification
+              </span>
+            </div>
+
+            <div className="space-y-4">
+              {requests.length === 0 ? (
+                <div className="p-8 text-center bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-200 dark:border-zinc-800 text-zinc-500 text-xs">
+                  No Paste & Buy requests submitted yet.
+                </div>
+              ) : (
+                requests.map((r) => (
+                  <div
+                    key={r.id}
+                    className={`p-5 sm:p-6 rounded-3xl bg-white dark:bg-zinc-900 border transition shadow-sm space-y-4 ${
+                      r.status === 'Pending Review' || !r.verified
+                        ? 'border-black dark:border-white ring-1 ring-black dark:ring-white'
+                        : 'border-zinc-200 dark:border-zinc-800'
+                    }`}
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-zinc-100 dark:border-zinc-800">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-bold uppercase text-zinc-400 font-mono">Ticket #{r.requestNumber}</span>
+                          <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase ${
+                            r.verified
+                              ? 'bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-300'
+                              : 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
+                          }`}>
+                            {r.verified ? 'Verified & Approved' : 'Pending Verification'}
+                          </span>
+                          <span className="px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-[9px] font-bold">
+                            {r.status}
+                          </span>
+                        </div>
+                        <h4 className="font-black text-base text-black dark:text-white mt-1">{r.productName}</h4>
+                        <p className="text-xs text-zinc-500">
+                          Customer: <strong className="text-black dark:text-white">{r.customerName}</strong> • Phone: <a href={`tel:${r.customerPhone}`} className="underline">{r.customerPhone}</a> • Email: {r.customerEmail}
+                        </p>
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-2">
+                        <button
+                          onClick={() => openVerifyRequest(r)}
+                          className="px-4 py-2 rounded-full bg-black dark:bg-white text-white dark:text-black text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 shadow-sm hover:opacity-90"
+                        >
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          <span>Verify & Quote Ticket</span>
+                        </button>
+                        <a
+                          href={`https://wa.me/${r.customerPhone?.replace(/[^0-9]/g, '')}?text=Hello%20${encodeURIComponent(r.customerName)},%20this%20is%20EarlyClaim%20Ghana.%20Regarding%20your%20Paste%20%26%20Buy%20ticket%20%23${r.requestNumber}%20(${encodeURIComponent(r.productName)}):%20Total%20quote%20is%20GH₵${r.quotedPriceGHS}%20(50%25%20deposit:%20GH₵${r.depositRequiredGHS}).%20Link:%20${encodeURIComponent(r.url)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-3.5 py-2 rounded-full bg-[#25D366] text-white text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 hover:opacity-95"
+                          title="Contact Customer on WhatsApp"
+                        >
+                          <span>WhatsApp Quote</span>
+                        </a>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                      <div className="space-y-2">
+                        <div>
+                          <span className="text-[10px] font-bold uppercase text-zinc-400 block mb-0.5">Sourced Product Link</span>
+                          <a
+                            href={r.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 dark:text-blue-400 font-semibold underline break-all flex items-center gap-1 hover:opacity-80"
+                          >
+                            <span>{r.url}</span>
+                            <ExternalLink className="w-3 h-3 flex-shrink-0" />
+                          </a>
+                        </div>
+                        <p className="text-zinc-600 dark:text-zinc-400">
+                          <strong>Category:</strong> {r.category} • <strong>Size:</strong> {r.size} • <strong>Color:</strong> {r.color}
+                        </p>
+                        {r.notes && (
+                          <p className="p-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 italic">
+                            Customer Notes: "{r.notes}"
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="space-y-1 sm:text-right">
+                        <p className="text-zinc-500">
+                          Target Budget: <strong className="text-black dark:text-white">${r.targetPriceUSD || 0} USD</strong>
+                        </p>
+                        <p className="text-zinc-500">
+                          Official Quoted Price: <strong className="text-black dark:text-white text-sm">{formatPrice(r.quotedPriceGHS)}</strong>
+                        </p>
+                        <p className="text-zinc-500">
+                          Deposit Required (50%): <strong className="text-green-600 dark:text-green-400">{formatPrice(r.depositRequiredGHS)}</strong>
+                        </p>
+                        {r.itemWeightKg && (
+                          <p className="text-zinc-500">
+                            Estimated Weight: <strong>{r.itemWeightKg} kg</strong>
+                          </p>
+                        )}
+                        {r.adminNotes && (
+                          <p className="text-[11px] text-zinc-500 italic pt-1">
+                            Admin Remarks: "{r.adminNotes}"
+                          </p>
+                        )}
+                        {r.verifiedAt && (
+                          <p className="text-[10px] text-zinc-400 font-mono pt-1">
+                            Verified on {new Date(r.verifiedAt).toLocaleString('en-GB')} by {r.verifiedBy}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
         )}
 
@@ -1714,7 +1953,16 @@ export default function AdminDashboardPage() {
                   {prodForm.images.map((img, idx) => (
                     <div key={idx} className="relative rounded-2xl border border-zinc-200 dark:border-zinc-800 p-1 bg-zinc-50 dark:bg-zinc-950 group">
                       <div className="aspect-square rounded-xl overflow-hidden bg-white dark:bg-zinc-900">
-                        <img src={img} alt="" className="w-full h-full object-cover" />
+                        <img
+                          src={img}
+                          alt=""
+                          className="w-full h-full object-cover"
+                          referrerPolicy="no-referrer"
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = 'https://images.unsplash.com/photo-1552346154-21d32810aba3?auto=format&fit=crop&w=800&q=80';
+                          }}
+                        />
                       </div>
                       {idx === 0 && (
                         <span className="absolute top-2 left-2 px-1.5 py-0.5 rounded text-[8px] font-black uppercase bg-black text-white dark:bg-white dark:text-black">
@@ -1762,24 +2010,48 @@ export default function AdminDashboardPage() {
                   ))}
                 </div>
 
-                {/* Add Photo by URL */}
-                <div className="flex gap-2">
-                  <input
-                    type="url"
-                    placeholder="Add photo by URL (https://...)"
-                    value={newImageUrl}
-                    onChange={(e) => setNewImageUrl(e.target.value)}
-                    className="flex-1 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 p-2.5 rounded-xl text-black dark:text-white"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleAddImageUrl}
-                    className="px-4 py-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 font-bold uppercase text-[10px]"
-                  >
-                    Add URL
-                  </button>
+                {/* Add Photo by Upload */}
+                <div className="space-y-2">
+                  {/* File Upload Button */}
+                  <div className="flex items-center gap-2">
+                    <label className="cursor-pointer px-4 py-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-black dark:text-white text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition">
+                      <ImageIcon className="w-4 h-4" />
+                      <span>{uploadingFile ? 'Uploading File...' : 'Upload Image from Computer'}</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileUpload}
+                        disabled={uploadingFile}
+                        className="hidden"
+                      />
+                    </label>
+                    <span className="text-[10px] text-zinc-400">
+                      Supports JPG, PNG, WEBP (stored automatically)
+                    </span>
+                  </div>
                 </div>
               </div>
+
+              {/* P&B Request Image View */}
+              {verifyModalReq && (
+                <div className="pt-3 border-t border-zinc-200 dark:border-zinc-800 space-y-2">
+                  <span className="font-bold uppercase text-[10px] text-zinc-400">
+                    Product Image
+                  </span>
+                  {verifyModalReq.imageUrl ? (
+                    <img
+                      src={verifyModalReq.imageUrl}
+                      alt="Product"
+                      className="w-full max-h-64 object-contain rounded-2xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800"
+                      referrerPolicy="no-referrer"
+                    />
+                  ) : (
+                    <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-zinc-500 text-center text-xs">
+                      No image provided for this request.
+                    </div>
+                  )}
+                </div>
+              )}
 
               <div className="flex gap-2 pt-4 border-t border-zinc-200 dark:border-zinc-800">
                 <button
@@ -1797,6 +2069,149 @@ export default function AdminDashboardPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Verify & Quote Paste & Buy Request Modal */}
+      {verifyModalReq && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm overflow-y-auto">
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 sm:p-8 max-w-lg w-full my-8 space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-zinc-100 dark:border-zinc-800">
+              <div>
+                <span className="text-[10px] font-bold uppercase text-zinc-400 font-mono">
+                  Ticket #{verifyModalReq.requestNumber}
+                </span>
+                <h3 className="text-base font-black uppercase text-black dark:text-white">
+                  Verify & Quote Paste & Buy Ticket
+                </h3>
+              </div>
+              <button
+                onClick={() => setVerifyModalReq(null)}
+                className="p-1 rounded-lg text-zinc-400 hover:text-black dark:hover:text-white"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-3 text-xs">
+              <div className="p-3 rounded-2xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 space-y-1.5">
+                <p className="font-bold text-black dark:text-white text-sm">{verifyModalReq.productName}</p>
+                <p className="text-zinc-500">Customer: <strong>{verifyModalReq.customerName}</strong> ({verifyModalReq.customerPhone})</p>
+                <p className="text-zinc-500">Requested Specs: {verifyModalReq.size} • {verifyModalReq.color}</p>
+                <div>
+                  <span className="text-[10px] font-bold uppercase text-zinc-400 block mb-0.5">Customer Sourced Link</span>
+                  <a
+                    href={verifyModalReq.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 dark:text-blue-400 font-semibold underline break-all flex items-center gap-1"
+                  >
+                    <span>{verifyModalReq.url}</span>
+                    <ExternalLink className="w-3 h-3 flex-shrink-0" />
+                  </a>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="font-bold uppercase text-[10px] text-zinc-400 block mb-1">
+                    Official Quoted Price (GHS) *
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    value={verifyQuotedGHS}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setVerifyQuotedGHS(val);
+                      if (val) setVerifyDepositGHS(Math.round(Number(val) * 0.5));
+                    }}
+                    className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 p-2.5 rounded-xl text-black dark:text-white font-bold"
+                  />
+                </div>
+
+                <div>
+                  <label className="font-bold uppercase text-[10px] text-zinc-400 block mb-1">
+                    Deposit Required (50%)
+                  </label>
+                  <input
+                    type="number"
+                    value={verifyDepositGHS}
+                    onChange={(e) => setVerifyDepositGHS(e.target.value)}
+                    className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 p-2.5 rounded-xl text-black dark:text-white"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="font-bold uppercase text-[10px] text-zinc-400 block mb-1">
+                    Estimated Weight (Kg)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    value={verifyWeight}
+                    onChange={(e) => setVerifyWeight(e.target.value)}
+                    placeholder="1.0"
+                    className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 p-2.5 rounded-xl text-black dark:text-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="font-bold uppercase text-[10px] text-zinc-400 block mb-1">
+                    Ticket Status
+                  </label>
+                  <select
+                    value={verifyStatus}
+                    onChange={(e) => setVerifyStatus(e.target.value)}
+                    className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 p-2.5 rounded-xl text-black dark:text-white"
+                  >
+                    <option value="Approved">Approved & Quoted</option>
+                    <option value="Quoted">Quoted</option>
+                    <option value="Paid">Deposit Paid</option>
+                    <option value="Purchased">Purchased by Agent</option>
+                    <option value="Shipped">Shipped</option>
+                    <option value="Arrived">Arrived in Accra</option>
+                    <option value="Delivered">Delivered</option>
+                    <option value="Rejected">Rejected</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="font-bold uppercase text-[10px] text-zinc-400 block mb-1">
+                  Verification Notes & Instructions for Customer
+                </label>
+                <textarea
+                  rows={3}
+                  placeholder="e.g. Verified genuine box and stock available from Tokyo agent. Freight booked via Air Cargo."
+                  value={verifyNotes}
+                  onChange={(e) => setVerifyNotes(e.target.value)}
+                  className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 p-2.5 rounded-xl text-black dark:text-white"
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-2 pt-3 border-t border-zinc-200 dark:border-zinc-800">
+              <button
+                type="button"
+                onClick={() => handleSaveVerification(true)}
+                disabled={verifyUpdating}
+                className="flex-1 py-3 rounded-full bg-black dark:bg-white text-white dark:text-black font-bold uppercase text-xs hover:opacity-90 transition"
+              >
+                {verifyUpdating ? 'Saving...' : 'Verify & Approve Ticket'}
+              </button>
+              <button
+                type="button"
+                onClick={() => handleSaveVerification(false)}
+                disabled={verifyUpdating}
+                className="px-4 py-3 rounded-full border border-red-300 dark:border-red-800 text-red-600 dark:text-red-400 font-bold uppercase text-xs hover:bg-red-50 dark:hover:bg-red-950/30 transition"
+              >
+                Reject
+              </button>
+            </div>
           </div>
         </div>
       )}

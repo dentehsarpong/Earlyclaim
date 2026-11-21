@@ -184,11 +184,21 @@ router.get('/requests', requireAdmin, (req, res) => {
   }
 });
 
-// Update custom request quote / status
+// Update custom request quote / status / verification
 router.put('/requests/:id', requireAdmin, (req, res) => {
   try {
     const { id } = req.params;
-    const { quotedPriceGHS, quotedPriceUSD, depositRequiredGHS, status, adminNotes } = req.body;
+    const {
+      quotedPriceGHS,
+      quotedPriceUSD,
+      depositRequiredGHS,
+      status,
+      adminNotes,
+      verified,
+      verifiedBy,
+      itemWeightKg,
+      estimatedDeliveryDays
+    } = req.body;
 
     const data = db.read();
     const index = data.customRequests.findIndex(r => r.id === id || r.requestNumber === id);
@@ -200,9 +210,17 @@ router.put('/requests/:id', requireAdmin, (req, res) => {
     if (depositRequiredGHS !== undefined) reqItem.depositRequiredGHS = Number(depositRequiredGHS);
     if (status) reqItem.status = status;
     if (adminNotes !== undefined) reqItem.adminNotes = adminNotes;
+    if (itemWeightKg !== undefined) reqItem.itemWeightKg = Number(itemWeightKg);
+    if (estimatedDeliveryDays !== undefined) reqItem.estimatedDeliveryDays = estimatedDeliveryDays;
+
+    if (verified !== undefined) {
+      reqItem.verified = Boolean(verified);
+      reqItem.verifiedAt = reqItem.verified ? new Date().toISOString() : null;
+      reqItem.verifiedBy = reqItem.verified ? (req.user ? req.user.email : 'admin') : null;
+    }
 
     db.write(data);
-    res.json({ success: true, request: reqItem, message: 'Request updated' });
+    res.json({ success: true, request: reqItem, message: 'Request updated successfully' });
   } catch (err) {
     res.status(500).json({ success: false, message: 'Failed to update request' });
   }

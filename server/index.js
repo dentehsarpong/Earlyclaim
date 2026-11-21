@@ -12,8 +12,8 @@ app.use(cors({
   origin: process.env.CLIENT_URL || 'http://localhost:5173',
   credentials: true
 }));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '20mb' }));
+app.use(express.urlencoded({ extended: true, limit: '20mb' }));
 
 // Serve uploaded images
 const uploadsDir = path.join(__dirname, '..', 'uploads');
@@ -61,7 +61,6 @@ app.use((req, res, next) => {
 
 app.listen(PORT, () => {
   console.log(`EARLYCLAIM Backend running on http://localhost:${PORT}`);
-  console.log(`Admin account: admin@earlyclaim.com / admin123`);
   console.log(`Email notifications: ${process.env.EMAIL_HOST ? 'configured' : 'not configured (console only)'}`);
   console.log(`SMS/WhatsApp: ${process.env.ENABLE_SMS === 'true' ? 'enabled' : 'disabled'}`);
 });

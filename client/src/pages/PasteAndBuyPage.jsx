@@ -29,6 +29,8 @@ export default function PasteAndBuyPage() {
   const [customerName, setCustomerName] = useState(user?.name || '');
   const [customerPhone, setCustomerPhone] = useState(user?.phone || '');
   const [customerEmail, setCustomerEmail] = useState(user?.email || '');
+  const [image, setImage] = useState(null); // Added image state
+  const [uploading, setUploading] = useState(false);
 
   const [submittedRequest, setSubmittedRequest] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -69,7 +71,8 @@ export default function PasteAndBuyPage() {
           notes: notes.trim(),
           customerName: customerName.trim(),
           customerPhone: customerPhone.trim(),
-          customerEmail: customerEmail.trim()
+          customerEmail: customerEmail.trim(),
+          imageUrl: image // Included image URL
         })
       });
 
@@ -84,6 +87,48 @@ export default function PasteAndBuyPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      setError('Please select a valid image file');
+      return;
+    }
+
+    setUploading(true);
+    setError('');
+
+    const reader = new FileReader();
+    reader.onload = async () => {
+      try {
+        const res = await fetch('/api/products/upload-image', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            dataUrl: reader.result,
+            filename: file.name
+          })
+        });
+        const data = await res.json();
+        if (data.success && data.url) {
+          setImage(data.url);
+        } else {
+          setError('Failed to upload image. Please try again.');
+        }
+      } catch (err) {
+        setError('Failed to upload image.');
+      } finally {
+        setUploading(false);
+      }
+    };
+    reader.onerror = () => {
+      setError('Failed to read image');
+      setUploading(false);
+    };
+    reader.readAsDataURL(file);
   };
 
   return (
@@ -193,9 +238,28 @@ export default function PasteAndBuyPage() {
                     />
                     <Link2 className="w-4 h-4 text-zinc-400 absolute left-3.5 top-3.5" />
                   </div>
-                  <p className="text-[10px] text-zinc-500 mt-1">
+                  <p className="text-[10px] text-zinc-500 mt-1 mb-4">
                     Accepts links from Taobao, Weidian, 1688, GOAT, StockX, Nike, Zara, Amazon, etc.
                   </p>
+
+                  <label className="block text-xs font-bold uppercase tracking-wider text-black dark:text-white mb-1.5">
+                    Product Reference Image (Optional)
+                  </label>
+                  <label className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-black dark:text-white text-xs font-bold uppercase tracking-wider transition">
+                    <span>{uploading ? 'Uploading...' : image ? 'Image Uploaded' : 'Upload Image from Computer'}</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                      disabled={uploading}
+                      className="hidden"
+                    />
+                  </label>
+                  {image && (
+                    <div className="mt-2 w-20 h-20 rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-800">
+                      <img src={image} alt="Preview" className="w-full h-full object-cover" />
+                    </div>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
