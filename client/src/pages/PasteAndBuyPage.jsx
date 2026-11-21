@@ -58,7 +58,7 @@ export default function PasteAndBuyPage() {
     setError('');
 
     try {
-      const res = await fetch(`${process.env.REACT_APP_API_URL || ''}/api/requests`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/requests`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -104,7 +104,7 @@ export default function PasteAndBuyPage() {
     const reader = new FileReader();
     reader.onload = async () => {
       try {
-        const res = await fetch(`${process.env.REACT_APP_API_URL || ''}/api/products/upload-image`, {
+        const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/products/upload-image`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

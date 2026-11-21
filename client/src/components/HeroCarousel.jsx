@@ -17,7 +17,7 @@ export default function HeroCarousel() {
     // We need to map this to the SLIDES structure in HeroCarousel
     const fetchBanners = async () => {
       try {
-        const response = await fetch(`${process.env.REACT_APP_API_URL || ''}/api/admin/banners`);
+        const response = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/admin/banners`);
         const data = await response.json();
         if (data.success && data.banners && data.banners.length > 0) {
           const mappedSlides = data.banners.map((b, index) => ({
