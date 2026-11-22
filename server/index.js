@@ -42,25 +42,21 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Serve frontend in production if built
+// Serve frontend in production
 const clientDist = path.join(__dirname, '..', 'client', 'dist');
+console.log('Serving frontend from:', clientDist);
 app.use(express.static(clientDist));
 
-// SPA Fallback
-app.use((req, res, next) => {
-  if (req.method === 'GET' && !req.path.startsWith('/api')) {
-    const indexHtml = path.join(clientDist, 'index.html');
-    return res.sendFile(indexHtml, (err) => {
-      if (err) {
-        res.status(200).send('EARLYCLAIM API is active. Run Vite dev server for frontend.');
-      }
-    });
+// SPA Fallback: Serve index.html for all non-API GET requests
+app.get('*', (req, res, next) => {
+  if (req.path.startsWith('/api') || req.path.startsWith('/uploads')) {
+    return next();
   }
-  next();
+  res.sendFile(path.join(clientDist, 'index.html'));
 });
 
-app.listen(PORT, () => {
-  console.log(`EARLYCLAIM Backend running on http://localhost:${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`EARLYCLAIM Backend running on http://0.0.0.0:${PORT}`);
   console.log(`Email notifications: ${process.env.EMAIL_HOST ? 'configured' : 'not configured (console only)'}`);
   console.log(`SMS/WhatsApp: ${process.env.ENABLE_SMS === 'true' ? 'enabled' : 'disabled'}`);
 });
