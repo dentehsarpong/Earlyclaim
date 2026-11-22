@@ -105,14 +105,17 @@ export default function PasteAndBuyPage() {
     const reader = new FileReader();
     reader.onload = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/api/products/upload-image`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
+      const res = await fetch(`${API_BASE_URL}/api/products/upload-image`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('earlyclaim_token')}`
+        },
+        body: JSON.stringify({
             dataUrl: reader.result,
             filename: file.name
-          })
-        });
+        })
+      });
         const data = await res.json();
         if (data.success && data.url) {
           setImage(data.url);
