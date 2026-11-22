@@ -1,3 +1,4 @@
+const fs = require('fs');
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
@@ -43,14 +44,19 @@ app.get('/api/health', (req, res) => {
 });
 
 // Serve frontend in production
+// Adjust path to ensure it looks one level up from server, then into client/dist
 const clientDist = path.join(__dirname, '..', 'client', 'dist');
-console.log('Serving frontend from:', clientDist);
-app.use(express.static(clientDist));
+console.log('Attempting to serve frontend from:', clientDist);
 
-// SPA Fallback: Serve index.html for all non-API GET requests
-app.get(/^(?!\/api|\/uploads).+$/, (req, res) => {
-  res.sendFile(path.join(clientDist, 'index.html'));
-});
+if (fs.existsSync(clientDist)) {
+  app.use(express.static(clientDist));
+  // SPA Fallback
+  app.get(/^(?!\/api|\/uploads).+$/, (req, res) => {
+    res.sendFile(path.join(clientDist, 'index.html'));
+  });
+} else {
+  console.error('Frontend build folder NOT FOUND at:', clientDist);
+}
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`EARLYCLAIM Backend running on http://0.0.0.0:${PORT}`);
