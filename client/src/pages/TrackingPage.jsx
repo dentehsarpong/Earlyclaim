@@ -14,6 +14,7 @@ import {
   MessageCircle
 } from 'lucide-react';
 import { useCurrency } from '../context/CurrencyContext';
+import { API_BASE_URL } from '../apiConfig';
 
 const STATUS_STAGES = [
   { key: 'Pre-ordered', label: '1. Pre-ordered', desc: 'Deposit confirmed & claim locked' },
@@ -38,7 +39,7 @@ export default function TrackingPage() {
     setLoading(true);
     setError('');
 
-    fetch(`/api/orders/track/${encodeURIComponent(searchCode.trim())}`)
+    fetch(`${API_BASE_URL}/api/orders/track/${encodeURIComponent(searchCode.trim())}`)
       .then(res => res.json())
       .then(data => {
         if (data.success && data.order) {
