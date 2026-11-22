@@ -33,7 +33,7 @@ export default function ProductCard({ product, onQuickView }) {
       onClick={() => onQuickView(product)}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className="group relative bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-3 flex flex-col justify-between hover:shadow-xl hover:border-black dark:hover:border-white transition-all duration-300 cursor-pointer"
+      className="group relative bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-2 sm:p-3 flex flex-col justify-between hover:shadow-xl hover:border-black dark:hover:border-white transition-all duration-300 cursor-pointer"
     >
       {/* Top Badges & Wishlist */}
       <div className="relative">
