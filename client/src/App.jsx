@@ -33,7 +33,7 @@ export default function App() {
           <CartProvider>
             <NotificationProvider>
               <Router>
-                <div className="flex flex-col min-h-screen bg-[#fafafa] dark:bg-[#09090b] text-[#18181b] dark:text-[#f4f4f5] transition-colors selection:bg-black selection:text-white dark:selection:bg-white dark:selection:text-black">
+                <div className="flex flex-col min-h-screen bg-[#fafafa] dark:bg-[#09090b] text-[#18181b] dark:text-[#f4f4f5] transition-colors overflow-x-hidden selection:bg-black selection:text-white dark:selection:bg-white dark:selection:text-black">
                   {/* Header */}
                   <Header />
 

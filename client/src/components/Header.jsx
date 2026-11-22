@@ -234,34 +234,34 @@ export default function Header({ onOpenSearch }) {
         </div>
 
         {/* Right: Currency, Dark/Light, Cart, Auth */}
-        <div className="flex items-center gap-2 sm:gap-3">
+        <div className="flex items-center gap-1.5 sm:gap-3">
           {/* Currency Switcher */}
-          <div className="flex items-center bg-zinc-900 rounded-full p-0.5 border border-zinc-800 text-[11px] font-semibold">
+          <div className="flex items-center bg-zinc-900 rounded-full p-0.5 border border-zinc-800 text-[9px] sm:text-[11px] font-semibold">
             <button
               onClick={() => setCurrency('GHS')}
-              className={`px-2.5 py-1 rounded-full transition ${
+              className={`px-1.5 sm:px-2.5 py-1 rounded-full transition ${
                 currency === 'GHS' ? 'bg-white text-black' : 'text-zinc-400 hover:text-white'
               }`}
             >
-              GHS (₵)
+              GHS
             </button>
             <button
               onClick={() => setCurrency('USD')}
-              className={`px-2.5 py-1 rounded-full transition ${
+              className={`px-1.5 sm:px-2.5 py-1 rounded-full transition ${
                 currency === 'USD' ? 'bg-white text-black' : 'text-zinc-400 hover:text-white'
               }`}
             >
-              USD ($)
+              USD
             </button>
           </div>
 
           {/* Dark / Light Toggle */}
           <button
             onClick={toggleTheme}
-            className="p-2 rounded-full bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 hover:text-white transition"
+            className="p-1.5 sm:p-2 rounded-full bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 hover:text-white transition"
             title="Toggle Theme"
           >
-            {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            {isDark ? <Sun className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> : <Moon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
           </button>
 
           {/* Notifications Bell (shown when logged in) */}
@@ -270,13 +270,13 @@ export default function Header({ onOpenSearch }) {
           {/* Cart Icon */}
           <button
             onClick={() => setIsCartOpen(true)}
-            className="relative p-2 rounded-full bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-200 hover:text-white transition"
+            className="relative p-1.5 sm:p-2 rounded-full bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-200 hover:text-white transition"
             aria-label={`Shopping cart, ${itemCount} items`}
             title="Pre-Order Cart"
           >
-            <ShoppingCart className="w-4 h-4" />
+            <ShoppingCart className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             {itemCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-white text-black text-[10px] font-extrabold w-4 h-4 rounded-full flex items-center justify-center" aria-hidden="true">
+              <span className="absolute -top-1 -right-1 bg-white text-black text-[9px] sm:text-[10px] font-extrabold w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full flex items-center justify-center" aria-hidden="true">
                 {itemCount}
               </span>
             )}
@@ -287,13 +287,13 @@ export default function Header({ onOpenSearch }) {
             <div className="relative" ref={userRef}>
               <button
                 onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                className="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-full bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-xs text-white transition"
+                className="flex items-center gap-1 pl-1 pr-2 py-1 rounded-full bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-[10px] sm:text-xs text-white transition"
               >
-                <div className="w-5 h-5 rounded-full bg-white text-black font-bold flex items-center justify-center text-[10px]">
+                <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-white text-black font-bold flex items-center justify-center text-[8px] sm:text-[10px]">
                   {user.name ? user.name[0].toUpperCase() : 'U'}
                 </div>
-                <span className="hidden sm:inline font-medium max-w-[90px] truncate">{user.name}</span>
-                <ChevronDown className="w-3.5 h-3.5 text-zinc-400" />
+                <span className="hidden sm:inline font-medium max-w-[70px] truncate">{user.name}</span>
+                <ChevronDown className="w-3 h-3 text-zinc-400" />
               </button>
 
               {userDropdownOpen && (
