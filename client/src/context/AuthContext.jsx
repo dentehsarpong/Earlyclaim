@@ -32,37 +32,47 @@ export const AuthProvider = ({ children }) => {
   }, [token]);
 
   const login = async (email, password) => {
-    const res = await fetch(`${API_URL}/api/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password })
-    });
-    const data = await res.json();
-    if (data.success) {
-      setToken(data.token);
-      setUser(data.user);
-      localStorage.setItem('earlyclaim_token', data.token);
-      setIsAuthModalOpen(false);
-      return { success: true };
+    try {
+      const res = await fetch(`${API_URL}/api/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setToken(data.token);
+        setUser(data.user);
+        localStorage.setItem('earlyclaim_token', data.token);
+        setIsAuthModalOpen(false);
+        return { success: true };
+      }
+      return { success: false, message: data.message || 'Login failed' };
+    } catch (err) {
+      console.error('Login error:', err);
+      return { success: false, message: `Network error: ${err.message}` };
     }
-    return { success: false, message: data.message };
   };
 
   const register = async (name, email, password, phone, referralCode) => {
-    const res = await fetch(`${API_URL}/api/auth/register`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, email, password, phone, referralCode })
-    });
-    const data = await res.json();
-    if (data.success) {
-      setToken(data.token);
-      setUser(data.user);
-      localStorage.setItem('earlyclaim_token', data.token);
-      setIsAuthModalOpen(false);
-      return { success: true };
+    try {
+      const res = await fetch(`${API_URL}/api/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, password, phone, referralCode })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setToken(data.token);
+        setUser(data.user);
+        localStorage.setItem('earlyclaim_token', data.token);
+        setIsAuthModalOpen(false);
+        return { success: true };
+      }
+      return { success: false, message: data.message || 'Registration failed' };
+    } catch (err) {
+      console.error('Registration error:', err);
+      return { success: false, message: `Network error: ${err.message}` };
     }
-    return { success: false, message: data.message };
   };
 
   const googleLogin = async (email, name) => {
