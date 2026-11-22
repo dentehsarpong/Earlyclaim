@@ -86,10 +86,7 @@ export default function Header({ onOpenSearch }) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
         {/* Left: Brand Logo & Main Nav */}
         <div className="flex items-center gap-4 lg:gap-6">
-          <Link to="/" className="flex items-center gap-2 group">
-            <div className="w-8 h-8 rounded-lg bg-white text-black font-black flex items-center justify-center tracking-tighter text-sm group-hover:scale-105 transition-transform">
-              EC
-            </div>
+          <Link to="/" className="flex items-center group">
             <div className="flex flex-col">
               <span className="font-extrabold text-lg sm:text-xl tracking-tight leading-none text-white">
                 EARLY<span className="text-zinc-400 font-light">CLAIM</span>

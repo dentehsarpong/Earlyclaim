@@ -29,7 +29,7 @@ export default function HeroCarousel() {
             ctaLink: b.ctaUrl,
             secondaryText: 'How It Works',
             secondaryLink: '/shipping-info',
-            image: b.image,
+            image: b.image.startsWith('/') ? `https://earlyclaim.onrender.com${b.image}` : b.image,
             stats: [
               { label: 'Deposit Option', val: '50% Upfront' },
               { label: 'Air Freight', val: '10–18 Days' },

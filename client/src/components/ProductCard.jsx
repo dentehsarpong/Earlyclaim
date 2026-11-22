@@ -3,6 +3,7 @@ import { Heart, ShoppingBag, Eye, Star, Clock } from 'lucide-react';
 import { useCurrency } from '../context/CurrencyContext';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
+import { getImageUrl } from '../utils/imageHelper';
 import ShipFromBadge from './ShipFromBadge';
 
 export default function ProductCard({ product, onQuickView }) {
@@ -63,7 +64,7 @@ export default function ProductCard({ product, onQuickView }) {
         {/* White-background Luxury Product Image */}
         <div className="w-full aspect-square rounded-xl bg-zinc-50 dark:bg-zinc-950 flex items-center justify-center overflow-hidden p-2 relative">
           <img
-            src={product.images?.[0] || 'https://images.unsplash.com/photo-1552346154-21d32810aba3?auto=format&fit=crop&w=800&q=80'}
+            src={getImageUrl(product.images?.[0])}
             alt={product.name}
             className="w-full h-full object-cover rounded-lg group-hover:scale-105 transition-transform duration-500"
             loading="lazy"

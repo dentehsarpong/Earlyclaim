@@ -3,35 +3,11 @@ const path = require('path');
 const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
 const db = require('../db');
+const { uploadToSupabase } = require('../utils/supabase');
+const multer = require('multer');
+const upload = multer({ storage: multer.memoryStorage() });
 const { requireAdmin } = require('../middleware/auth');
 
-// Multer for local disk upload (fallback when no cloud storage configured)
-let upload;
-try {
-  const multer = require('multer');
-  const uploadsDir = path.join(__dirname, '../../uploads');
-  if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
-
-  const storage = multer.diskStorage({
-    destination: (req, file, cb) => cb(null, uploadsDir),
-    filename: (req, file, cb) => {
-      const ext = path.extname(file.originalname).toLowerCase();
-      cb(null, `${uuidv4()}${ext}`);
-    }
-  });
-
-  upload = multer({
-    storage,
-    limits: { fileSize: 8 * 1024 * 1024 }, // 8 MB
-    fileFilter: (req, file, cb) => {
-      if (file.mimetype.startsWith('image/')) cb(null, true);
-      else cb(new Error('Only image files are allowed'), false);
-    }
-  });
-} catch {
-  // multer not installed — image upload endpoints will return a helpful error
-  upload = null;
-}
 
 const router = express.Router();
 
@@ -156,16 +132,12 @@ router.get('/:idOrSlug', (req, res) => {
 });
 
 // Admin: Upload image via base64 data URL
-router.post('/upload-image', requireAdmin, (req, res) => {
+router.post('/upload-image', requireAdmin, async (req, res) => {
   try {
-    const { dataUrl, filename } = req.body;
+    const { dataUrl } = req.body;
     if (!dataUrl) {
       return res.status(400).json({ success: false, message: 'Image data URL is required' });
     }
-
-    const fs = require('fs');
-    const uploadsDir = path.join(__dirname, '../../uploads');
-    if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
 
     // Extract base64 and mime
     const matches = dataUrl.match(/^data:image\/([a-zA-Z0-9+.-]+);base64,(.+)$/);
@@ -173,58 +145,46 @@ router.post('/upload-image', requireAdmin, (req, res) => {
       return res.status(400).json({ success: false, message: 'Invalid base64 image data URL' });
     }
 
-    const ext = matches[1].replace('jpeg', 'jpg');
+    const mime = `image/${matches[1]}`;
     const base64Data = matches[2];
     const buffer = Buffer.from(base64Data, 'base64');
+    const filename = `${uuidv4()}.${matches[1].replace('jpeg', 'jpg')}`;
 
-    // Limit to 10MB
-    if (buffer.length > 10 * 1024 * 1024) {
-      return res.status(400).json({ success: false, message: 'File size exceeds 10MB limit' });
-    }
+    const publicUrl = await uploadToSupabase(buffer, filename, mime);
 
-    const uniqueName = `${uuidv4()}.${ext}`;
-    const filePath = path.join(uploadsDir, uniqueName);
-    fs.writeFileSync(filePath, buffer);
-
-    const publicUrl = `/uploads/${uniqueName}`;
     res.json({
       success: true,
       url: publicUrl,
-      message: 'Image uploaded successfully'
+      message: 'Image uploaded successfully to Supabase'
     });
   } catch (err) {
-    console.error('Base64 upload error:', err);
-    res.status(500).json({ success: false, message: 'Failed to save uploaded image' });
+    console.error('Supabase upload error:', err);
+    res.status(500).json({ success: false, message: 'Failed to upload image to Supabase' });
   }
 });
 
 // Admin: Upload product images
-router.post('/:id/images', requireAdmin, (req, res) => {
-  if (!upload) {
-    return res.status(501).json({
-      success: false,
-      message: 'Image upload requires multer. Run: cd server && npm install multer'
+router.post('/:id/images', requireAdmin, upload.array('images', 8), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const data = db.read();
+    const prod = data.products.find(p => p.id === id);
+    if (!prod) return res.status(404).json({ success: false, message: 'Product not found' });
+
+    const uploadPromises = req.files.map(file => {
+      const filename = `${uuidv4()}${path.extname(file.originalname)}`;
+      return uploadToSupabase(file.buffer, filename, file.mimetype);
     });
+
+    const urls = await Promise.all(uploadPromises);
+    prod.images = (prod.images || []).concat(urls);
+    logProductChange(data, id, req.user.id, 'image_upload', { addedCount: urls.length });
+    db.write(data);
+    res.json({ success: true, images: prod.images, message: 'Images uploaded to Supabase' });
+  } catch (err) {
+    console.error('Supabase product image upload error:', err);
+    res.status(500).json({ success: false, message: 'Failed to upload images to Supabase' });
   }
-
-  upload.array('images', 8)(req, res, err => {
-    if (err) return res.status(400).json({ success: false, message: err.message });
-
-    try {
-      const { id } = req.params;
-      const data = db.read();
-      const prod = data.products.find(p => p.id === id);
-      if (!prod) return res.status(404).json({ success: false, message: 'Product not found' });
-
-      const urls = req.files.map(f => `/uploads/${path.basename(f.path)}`);
-      prod.images = (prod.images || []).concat(urls);
-      logProductChange(data, id, req.user.id, 'image_upload', { addedCount: urls.length });
-      db.write(data);
-      res.json({ success: true, images: prod.images, message: 'Images uploaded' });
-    } catch (err2) {
-      res.status(500).json({ success: false, message: 'Failed to upload images' });
-    }
-  });
 });
 
 // Admin: Reorder images

@@ -1269,7 +1269,7 @@ export default function AdminDashboardPage() {
                           const reader = new FileReader();
                           reader.onload = async () => {
                             try {
-                              const res = await fetch('/api/products/upload-image', {
+                              const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/products/upload-image`, {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
                                 body: JSON.stringify({ dataUrl: reader.result, filename: file.name })

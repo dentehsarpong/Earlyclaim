@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { X, Star, ShieldCheck, Plane, CheckCircle2, ShoppingBag, ArrowRight } from 'lucide-react';
+import { getImageUrl } from '../utils/imageHelper';
 import { useCurrency } from '../context/CurrencyContext';
 import { useCart } from '../context/CartContext';
 
@@ -57,7 +58,7 @@ export default function ProductModal({ product, onClose }) {
             <div className="space-y-4">
               <div className="aspect-square rounded-2xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 overflow-hidden flex items-center justify-center">
                 <img
-                  src={images[selectedImg]}
+                  src={getImageUrl(images[selectedImg])}
                   alt={product.name}
                   className="w-full h-full object-cover"
                 />
@@ -74,7 +75,7 @@ export default function ProductModal({ product, onClose }) {
                         selectedImg === i ? 'border-black dark:border-white' : 'border-zinc-200 dark:border-zinc-800 opacity-60'
                       }`}
                     >
-                      <img src={img} alt="" className="w-full h-full object-cover" />
+                      <img src={getImageUrl(img)} alt="" className="w-full h-full object-cover" />
                     </button>
                   ))}
                 </div>

@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { v4: uuidv4 } = require('uuid');
 const db = require('../db');
+const { uploadToSupabase } = require('../utils/supabase');
 const { requireAdmin } = require('../middleware/auth');
 const { notifyOrderStatusChange } = require('../utils/notification');
 
@@ -315,10 +316,25 @@ router.get('/banners/all', requireAdmin, (req, res) => {
   }
 });
 
-router.post('/banners', requireAdmin, (req, res) => {
+router.post('/banners', requireAdmin, async (req, res) => {
   try {
-    const { title, subtitle, ctaText, ctaUrl, image } = req.body;
-    if (!title || !image) return res.status(400).json({ success: false, message: 'Title and image are required' });
+    const { title, subtitle, ctaText, ctaUrl, image, dataUrl } = req.body;
+
+    let imageUrl = image;
+
+    // If base64 data is provided, upload to Supabase
+    if (dataUrl) {
+      const matches = dataUrl.match(/^data:image\/([a-zA-Z0-9+.-]+);base64,(.+)$/);
+      if (matches) {
+        const mime = `image/${matches[1]}`;
+        const base64Data = matches[2];
+        const buffer = Buffer.from(base64Data, 'base64');
+        const filename = `${uuidv4()}.${matches[1].replace('jpeg', 'jpg')}`;
+        imageUrl = await uploadToSupabase(buffer, filename, mime);
+      }
+    }
+
+    if (!title || !imageUrl) return res.status(400).json({ success: false, message: 'Title and image are required' });
 
     const data = db.read();
     const banner = {
@@ -327,7 +343,7 @@ router.post('/banners', requireAdmin, (req, res) => {
       subtitle: subtitle || '',
       ctaText: ctaText || 'Shop Now',
       ctaUrl: ctaUrl || '/',
-      image,
+      image: imageUrl,
       active: true,
       order: (data.banners || []).length
     };
@@ -336,6 +352,7 @@ router.post('/banners', requireAdmin, (req, res) => {
     db.write(data);
     res.status(201).json({ success: true, banner });
   } catch (err) {
+    console.error('Supabase banner upload error:', err);
     res.status(500).json({ success: false, message: 'Failed to create banner' });
   }
 });

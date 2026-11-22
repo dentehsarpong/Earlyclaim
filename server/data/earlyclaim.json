@@ -1766,7 +1766,7 @@
       "subtitle": "",
       "ctaText": "Shop Now",
       "ctaUrl": "/",
-      "image": "/uploads/1525d3ec-5c4e-47eb-b762-4359e53a1122.jpg",
+      "image": "https://eryydxznzpcrqxcylxoa.supabase.co/storage/v1/object/public/product-images/1525d3ec-5c4e-47eb-b762-4359e53a1122.jpg",
       "active": true,
       "order": 1
     },
@@ -1776,7 +1776,7 @@
       "subtitle": "",
       "ctaText": "Shop Now",
       "ctaUrl": "/",
-      "image": "/uploads/264f374e-b70b-494c-960e-c1c814d45ffc.jpg",
+      "image": "https://eryydxznzpcrqxcylxoa.supabase.co/storage/v1/object/public/product-images/264f374e-b70b-494c-960e-c1c814d45ffc.jpg",
       "active": true,
       "order": 1
     },
@@ -1786,9 +1786,19 @@
       "subtitle": "",
       "ctaText": "Explore",
       "ctaUrl": "/",
-      "image": "/uploads/0f2109f5-1d88-42f9-a824-b3f618ca4f12.jpg",
+      "image": "https://eryydxznzpcrqxcylxoa.supabase.co/storage/v1/object/public/product-images/0f2109f5-1d88-42f9-a824-b3f618ca4f12.jpg",
       "active": true,
       "order": 2
+    },
+    {
+      "id": "banner-71f8de",
+      "title": "NIKE SB DAY",
+      "subtitle": "Shop your legit SB Nike here",
+      "ctaText": "Shop Now",
+      "ctaUrl": "/",
+      "image": "https://eryydxznzpcrqxcylxoa.supabase.co/storage/v1/object/public/product-images/5cfd245c-c5fd-4524-9deb-3a4c50ca22bc.jpg",
+      "active": true,
+      "order": 3
     }
   ]
 }
