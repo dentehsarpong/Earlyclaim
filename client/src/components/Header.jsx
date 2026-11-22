@@ -89,7 +89,7 @@ export default function Header({ onOpenSearch }) {
           <Link to="/" className="flex items-center group">
             <div className="flex flex-col">
               <span className="font-extrabold text-lg sm:text-xl tracking-tight leading-none text-white">
-                EARLY<span className="text-zinc-400 font-light">CLAIM</span>
+                EARLYCLAIM
               </span>
               <span className="text-[9px] uppercase tracking-widest text-zinc-400 font-medium">
                 Shopping Agent • Ghana
