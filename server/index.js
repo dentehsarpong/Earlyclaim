@@ -48,10 +48,7 @@ console.log('Serving frontend from:', clientDist);
 app.use(express.static(clientDist));
 
 // SPA Fallback: Serve index.html for all non-API GET requests
-app.get('/*', (req, res, next) => {
-  if (req.path.startsWith('/api') || req.path.startsWith('/uploads')) {
-    return next();
-  }
+app.get(/^(?!\/api|\/uploads).+$/, (req, res) => {
   res.sendFile(path.join(clientDist, 'index.html'));
 });
 
