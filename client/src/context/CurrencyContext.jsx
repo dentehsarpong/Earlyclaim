@@ -1,8 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { API_BASE_URL } from '../apiConfig';
 
 const CurrencyContext = createContext();
-
-const API_URL = import.meta.env.VITE_API_URL || '';
 
 export const CurrencyProvider = ({ children }) => {
   const [currency, setCurrency] = useState(() => {
@@ -16,7 +15,7 @@ export const CurrencyProvider = ({ children }) => {
 
   // Fetch live or configured rates from backend
   useEffect(() => {
-    fetch(`${API_URL}/api/rates`)
+    fetch(`${API_BASE_URL}/api/rates`)
       .then(res => res.json())
       .then(data => {
         if (data.success && data.USD_TO_GHS) {

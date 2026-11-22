@@ -7,6 +7,7 @@ import PillTabs from '../components/PillTabs';
 import ProductCard from '../components/ProductCard';
 import ProductModal from '../components/ProductModal';
 import { useCurrency } from '../context/CurrencyContext';
+import { API_BASE_URL } from '../apiConfig';
 
 export default function HomePage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -45,7 +46,7 @@ export default function HomePage() {
     else if (sortOption === 'price_desc') params.append('sort', 'price_desc');
     else if (sortOption === 'rating') params.append('sort', 'rating');
 
-    fetch(`${import.meta.env.VITE_API_URL || ''}/api/products?${params.toString()}`)
+    fetch(`${API_BASE_URL}/api/products?${params.toString()}`)
       .then(res => res.json())
       .then(data => {
         if (data.success && data.products) {

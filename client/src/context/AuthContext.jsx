@@ -1,8 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { API_BASE_URL } from '../apiConfig';
 
 const AuthContext = createContext();
-
-const API_URL = import.meta.env.VITE_API_URL || '';
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -13,7 +12,7 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     if (token) {
-      fetch(`${API_URL}/api/auth/me`, {
+      fetch(`${API_BASE_URL}/api/auth/me`, {
         headers: { Authorization: `Bearer ${token}` }
       })
         .then(res => res.json())
@@ -33,7 +32,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      const res = await fetch(`${API_URL}/api/auth/login`, {
+      const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
@@ -55,7 +54,7 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (name, email, password, phone, referralCode) => {
     try {
-      const res = await fetch(`${API_URL}/api/auth/register`, {
+      const res = await fetch(`${API_BASE_URL}/api/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email, password, phone, referralCode })
@@ -76,20 +75,24 @@ export const AuthProvider = ({ children }) => {
   };
 
   const googleLogin = async (email, name) => {
-    const res = await fetch(`${API_URL}/api/auth/google`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, name, googleId: 'goog_' + Date.now() })
-    });
-    const data = await res.json();
-    if (data.success) {
-      setToken(data.token);
-      setUser(data.user);
-      localStorage.setItem('earlyclaim_token', data.token);
-      setIsAuthModalOpen(false);
-      return { success: true };
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/auth/google`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, name, googleId: 'goog_' + Date.now() })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setToken(data.token);
+        setUser(data.user);
+        localStorage.setItem('earlyclaim_token', data.token);
+        setIsAuthModalOpen(false);
+        return { success: true };
+      }
+      return { success: false, message: data.message };
+    } catch (err) {
+      return { success: false, message: 'Google login failed' };
     }
-    return { success: false, message: data.message };
   };
 
   const logout = () => {
@@ -104,7 +107,7 @@ export const AuthProvider = ({ children }) => {
       return false;
     }
     try {
-      const res = await fetch(`${API_URL}/api/auth/wishlist/toggle`, {
+      const res = await fetch(`${API_BASE_URL}/api/auth/wishlist/toggle`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

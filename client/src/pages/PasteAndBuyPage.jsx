@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCurrency } from '../context/CurrencyContext';
+import { API_BASE_URL } from '../apiConfig';
 
 export default function PasteAndBuyPage() {
   const { user } = useAuth();
@@ -58,7 +59,7 @@ export default function PasteAndBuyPage() {
     setError('');
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/requests`, {
+      const res = await fetch(`${API_BASE_URL}/api/requests`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -104,7 +105,7 @@ export default function PasteAndBuyPage() {
     const reader = new FileReader();
     reader.onload = async () => {
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/products/upload-image`, {
+        const res = await fetch(`${API_BASE_URL}/api/products/upload-image`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
