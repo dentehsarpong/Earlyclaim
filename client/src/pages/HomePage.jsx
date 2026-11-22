@@ -45,7 +45,7 @@ export default function HomePage() {
     else if (sortOption === 'price_desc') params.append('sort', 'price_desc');
     else if (sortOption === 'rating') params.append('sort', 'rating');
 
-    fetch(`/api/products?${params.toString()}`)
+    fetch(`${import.meta.env.VITE_API_URL || ''}/api/products?${params.toString()}`)
       .then(res => res.json())
       .then(data => {
         if (data.success && data.products) {
