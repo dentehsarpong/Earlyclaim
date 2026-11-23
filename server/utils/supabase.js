@@ -1,15 +1,21 @@
 const { createClient } = require('@supabase/supabase-js');
 
-// Initialize Supabase client
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
-
 const BUCKET_NAME = 'product-images';
+const getSupabase = () => {
+  const url = process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_KEY;
+  if (!url || !key) {
+    throw new Error('Image storage is not configured: set SUPABASE_URL and SUPABASE_KEY');
+  }
+  return createClient(url, key);
+};
 
 /**
  * Upload a file buffer to Supabase Storage
  */
 const uploadToSupabase = async (fileBuffer, filename, mimetype) => {
   try {
+    const supabase = getSupabase();
     const { data, error } = await supabase.storage
       .from(BUCKET_NAME)
       .upload(filename, fileBuffer, {
@@ -36,6 +42,7 @@ const uploadToSupabase = async (fileBuffer, filename, mimetype) => {
  */
 const deleteFromSupabase = async (filename) => {
   try {
+    const supabase = getSupabase();
     const { error } = await supabase.storage
       .from(BUCKET_NAME)
       .remove([filename]);
@@ -47,7 +54,6 @@ const deleteFromSupabase = async (filename) => {
 };
 
 module.exports = {
-  supabase,
   uploadToSupabase,
   deleteFromSupabase
 };

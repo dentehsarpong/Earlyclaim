@@ -3,7 +3,7 @@ const path = require('path');
 const bcrypt = require('bcryptjs');
 const sampleProducts = require('./data/products');
 
-const DB_FILE = path.join(__dirname, 'data', 'earlyclaim.json');
+const DB_FILE = process.env.DB_FILE || path.join(__dirname, 'data', 'earlyclaim.json');
 
 // Initialize database storage
 function getInitialData() {

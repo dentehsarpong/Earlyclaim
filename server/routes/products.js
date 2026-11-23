@@ -163,6 +163,32 @@ router.post('/upload-image', requireAdmin, async (req, res) => {
   }
 });
 
+// Customer reference images for Paste & Buy. These are stored in durable object
+// storage and do not require an admin account.
+router.post('/upload-reference-image', async (req, res) => {
+  try {
+    const { dataUrl } = req.body;
+    if (typeof dataUrl !== 'string' || dataUrl.length > 7 * 1024 * 1024) {
+      return res.status(413).json({ success: false, message: 'Image must be smaller than 5 MB' });
+    }
+    const matches = dataUrl.match(/^data:image\/(jpeg|jpg|png|webp);base64,([A-Za-z0-9+/]+=*)$/i);
+    if (!matches) return res.status(400).json({ success: false, message: 'Choose a JPG, PNG, or WebP image' });
+
+    const ext = matches[1].toLowerCase().replace('jpeg', 'jpg');
+    const mime = ext === 'jpg' ? 'image/jpeg' : `image/${ext}`;
+    const buffer = Buffer.from(matches[2], 'base64');
+    if (!buffer.length || buffer.length > 5 * 1024 * 1024) {
+      return res.status(413).json({ success: false, message: 'Image must be smaller than 5 MB' });
+    }
+
+    const url = await uploadToSupabase(buffer, `paste-buy/${uuidv4()}.${ext}`, mime);
+    res.status(201).json({ success: true, url });
+  } catch (err) {
+    console.error('Paste & Buy image upload error:', err);
+    res.status(500).json({ success: false, message: 'Could not store image. Please try again.' });
+  }
+});
+
 // Admin: Upload product images
 router.post('/:id/images', requireAdmin, upload.array('images', 8), async (req, res) => {
   try {

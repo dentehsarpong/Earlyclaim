@@ -137,44 +137,15 @@ Open **[http://localhost:5000](http://localhost:5000)** to view the production a
 
 ---
 
-## 🌐 Deployment Instructions
+## 🌐 Deploy both app parts on Render
 
-### 1. Backend Deployment (Render or Railway)
-1. Push your repository to GitHub.
-2. In **Render** or **Railway**, create a **New Web Service** pointing to the repository.
-3. Configure the service:
-   - **Root Directory**: `server`
-   - **Build Command**: `npm install`
-   - **Start Command**: `node index.js`
-4. Set Environment Variables:
-   - `PORT`: `5000`
-   - `JWT_SECRET`: `<your-random-secure-string>`
-   - `CLIENT_URL`: `https://your-frontend-domain.vercel.app`
-   - `PAYSTACK_SECRET_KEY`: `<your-paystack-secret-key>`
-   - `MONGODB_URI`: `mongodb+srv://...` (Optional; file persistence is used if omitted)
+The root `render.yaml` describes one Render web service that builds the Vite frontend and serves it from Express. This keeps the frontend and API on one origin. It also mounts a persistent disk for the JSON database, so product records and uploaded image URLs survive service restarts and deploys. Product image files themselves are stored in the configured Supabase Storage bucket.
 
-### 2. Frontend Deployment (Vercel)
-1. In **Vercel**, import the repository.
-2. Configure project settings:
-   - **Root Directory**: `client`
-   - **Framework Preset**: `Vite`
-   - **Build Command**: `npm run build`
-   - **Output Directory**: `dist`
-3. In `client/vite.config.js` or via rewrite rules in `vercel.json`, direct `/api` proxy calls to your deployed backend URL:
-```json
-{
-  "rewrites": [
-    {
-      "source": "/api/:path*",
-      "destination": "https://your-render-backend.onrender.com/api/:path*"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
-    }
-  ]
-}
-```
+1. Push the repository to GitHub and create a **Blueprint** in Render from that repository.
+2. Set `SUPABASE_URL` and `SUPABASE_KEY` in the Render service environment. The Supabase `product-images` bucket must exist and allow public reads for uploaded product images.
+3. Deploy the service. Render generates `JWT_SECRET` and attaches a 1 GB persistent disk at `/var/data`.
+
+The service uses `npm install --prefix server && npm install --prefix client && npm run build` to build and `npm start` to serve the full app. Leave `VITE_API_URL` unset so frontend API calls use the same Render origin. The persistent disk requires a Render plan that supports disks.
 
 ---
 

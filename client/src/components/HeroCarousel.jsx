@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Sparkles, Plane, ShieldCheck, ArrowRight } from 'lucide-react';
+import { getImageUrl } from '../utils/imageHelper';
 
 // Removed static SLIDES constant
 
@@ -29,7 +30,7 @@ export default function HeroCarousel() {
             ctaLink: b.ctaUrl,
             secondaryText: 'How It Works',
             secondaryLink: '/shipping-info',
-            image: b.image.startsWith('/') ? `https://earlyclaim.onrender.com${b.image}` : b.image,
+            image: getImageUrl(b.image),
             stats: [
               { label: 'Deposit Option', val: '50% Upfront' },
               { label: 'Air Freight', val: '10–18 Days' },

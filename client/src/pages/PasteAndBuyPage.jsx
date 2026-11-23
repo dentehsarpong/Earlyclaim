@@ -105,11 +105,10 @@ export default function PasteAndBuyPage() {
     const reader = new FileReader();
     reader.onload = async () => {
       try {
-      const res = await fetch(`${API_BASE_URL}/api/products/upload-image`, {
+      const res = await fetch(`${API_BASE_URL}/api/products/upload-reference-image`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('earlyclaim_token')}`
         },
         body: JSON.stringify({
             dataUrl: reader.result,
@@ -117,13 +116,14 @@ export default function PasteAndBuyPage() {
         })
       });
         const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Upload failed');
         if (data.success && data.url) {
           setImage(data.url);
         } else {
           setError('Failed to upload image. Please try again.');
         }
       } catch (err) {
-        setError('Failed to upload image.');
+        setError(err.message || 'Failed to upload image.');
       } finally {
         setUploading(false);
       }
