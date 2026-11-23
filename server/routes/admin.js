@@ -2,9 +2,54 @@ const express = require('express');
 const router = express.Router();
 const { v4: uuidv4 } = require('uuid');
 const db = require('../db');
-const { uploadToSupabase } = require('../utils/supabase');
+const { uploadToSupabase, deleteStoredImage } = require('../utils/supabase');
 const { requireAdmin } = require('../middleware/auth');
 const { notifyOrderStatusChange } = require('../utils/notification');
+
+// One authenticated read keeps the dashboard from waiting on nine separate
+// round trips and reads the JSON database only once.
+router.get('/dashboard', requireAdmin, (req, res) => {
+  try {
+    const data = db.read();
+    const orders = Array.isArray(data.orders) ? data.orders : [];
+    const products = Array.isArray(data.products) ? data.products : [];
+    const requests = Array.isArray(data.customRequests) ? data.customRequests : [];
+    const users = Array.isArray(data.users) ? data.users : [];
+    const categoryCounts = {};
+    products.forEach(product => {
+      const category = product.category || 'Uncategorized';
+      categoryCounts[category] = (categoryCounts[category] || 0) + 1;
+    });
+
+    res.json({
+      success: true,
+      stats: {
+        totalRevenueGHS: orders.reduce((sum, order) => sum + (order.depositPaidGHS || 0), 0),
+        totalOrders: orders.length,
+        pendingOrders: orders.filter(order => order.status !== 'Delivered').length,
+        pendingPayments: orders.filter(order => order.paymentStatus === 'pending_confirmation').length,
+        totalProducts: products.length,
+        totalCustomers: users.length,
+        pendingCustomRequests: requests.filter(item => item.status === 'Pending Review').length,
+        newOrders: orders.filter(order => !order.adminViewed).length,
+        categoryCounts
+      },
+      orders,
+      requests,
+      products: products.slice(0, 200),
+      customers: users.map(({ password, ...user }) => user),
+      categories: data.categories || [],
+      banners: Array.isArray(data.banners) ? data.banners : [],
+      rates: data.shippingRates || {},
+      logs: (Array.isArray(data.productAuditLog) ? data.productAuditLog : [])
+        .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+        .slice(0, 200)
+    });
+  } catch (err) {
+    console.error('Admin dashboard data error:', err);
+    res.status(500).json({ success: false, message: 'Failed to load dashboard data' });
+  }
+});
 
 // Dashboard Overview Analytics
 router.get('/stats', requireAdmin, (req, res) => {
@@ -371,11 +416,14 @@ router.put('/banners/:id', requireAdmin, (req, res) => {
   }
 });
 
-router.delete('/banners/:id', requireAdmin, (req, res) => {
+router.delete('/banners/:id', requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const data = db.read();
-    data.banners = (data.banners || []).filter(b => b.id !== id);
+    const banner = (data.banners || []).find(item => item.id === id);
+    if (!banner) return res.status(404).json({ success: false, message: 'Banner not found' });
+    await deleteStoredImage(banner.image);
+    data.banners = data.banners.filter(item => item.id !== id);
     db.write(data);
     res.json({ success: true, message: 'Banner deleted' });
   } catch (err) {

@@ -4,6 +4,7 @@ import { X, Star, ShieldCheck, Plane, CheckCircle2, ShoppingBag, ArrowRight } fr
 import { getImageUrl } from '../utils/imageHelper';
 import { useCurrency } from '../context/CurrencyContext';
 import { useCart } from '../context/CartContext';
+import { getColorSwatch } from '../utils/colorSwatch';
 
 export default function ProductModal({ product, onClose }) {
   const { formatPrice } = useCurrency();
@@ -41,6 +42,18 @@ export default function ProductModal({ product, onClose }) {
     navigate('/checkout');
   };
 
+  const selectColor = (color) => {
+    setSelectedColor(color);
+    const matchingImage = (product.imageColors || []).findIndex(item => String(item || '').trim().toLowerCase() === String(color).trim().toLowerCase());
+    if (matchingImage >= 0) setSelectedImg(matchingImage);
+  };
+
+  const selectImage = (index) => {
+    setSelectedImg(index);
+    const imageColor = product.imageColors?.[index];
+    if (imageColor) setSelectedColor(imageColor);
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm overflow-hidden">
       <div className="relative w-full max-w-3xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col overscroll-behavior-contain">
@@ -70,7 +83,7 @@ export default function ProductModal({ product, onClose }) {
                   {images.map((img, i) => (
                     <button
                       key={i}
-                      onClick={() => setSelectedImg(i)}
+                      onClick={() => selectImage(i)}
                       className={`w-16 h-16 rounded-xl overflow-hidden border-2 transition ${
                         selectedImg === i ? 'border-black dark:border-white' : 'border-zinc-200 dark:border-zinc-800 opacity-60'
                       }`}
@@ -178,7 +191,7 @@ export default function ProductModal({ product, onClose }) {
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <label className="text-xs font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300">
-                      Size: <span className="text-black dark:text-white">{selectedSize}</span>
+                      {product.category === 'Sneakers' || /sneaker/i.test(product.name) ? 'EU Size:' : 'Size:'} <span className="text-black dark:text-white">{selectedSize}</span>
                     </label>
                   </div>
                   <div className="flex flex-wrap gap-1.5">
@@ -209,14 +222,15 @@ export default function ProductModal({ product, onClose }) {
                     {product.colors.map((c) => (
                       <button
                         key={c}
-                        onClick={() => setSelectedColor(c)}
-                        className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition ${
+                        onClick={() => selectColor(c)}
+                        className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-medium border transition ${
                           selectedColor === c
                             ? 'bg-black text-white dark:bg-white dark:text-black border-black dark:border-white'
                             : 'bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 border-zinc-300 dark:border-zinc-700'
                         }`}
                       >
-                        {c}
+                        <span aria-hidden="true" className="inline-block w-3.5 h-3.5 rounded-full border border-black/20 dark:border-white/30" style={{ background: getColorSwatch(c) }} />
+                        <span>{c}</span>
                       </button>
                     ))}
                   </div>

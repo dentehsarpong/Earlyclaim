@@ -254,6 +254,21 @@ class Database {
           data.products.forEach(p => {
             if (p.shipFromCountry === undefined) { p.shipFromCountry = 'US'; mutated = true; }
             if (p.visibility === undefined) { p.visibility = 'published'; mutated = true; }
+            if (p.imageColors === undefined) {
+              p.imageColors = Array.isArray(p.images) ? Array(p.images.length).fill('') : [];
+              mutated = true;
+            }
+            const currentSizes = Array.isArray(p.sizes) ? p.sizes : [];
+            const isSneaker = p.category === 'Sneakers' || /sneaker|trainer|running shoe/i.test(p.name || '');
+            const legacySeedSneaker = ['des-002', 'des-003'].includes(p.id) && currentSizes.some(size => /^EU\s/i.test(size));
+            if (isSneaker && (currentSizes.some(size => /^US\s/i.test(size)) || legacySeedSneaker)) {
+              p.sizes = Array.from({ length: 14 }, (_, index) => String(index + 35));
+              mutated = true;
+            } else if (/jacket|shirt|hoodie|sweater|coat|dress/i.test(p.name || '') &&
+              currentSizes.some(size => /^(?:S|M|L|XL|XXL)(?:\b|\s*\()/i.test(size))) {
+              p.sizes = ['Small', 'Medium', 'Large', 'Extra Large'];
+              mutated = true;
+            }
           });
         }
 

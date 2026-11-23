@@ -22,7 +22,7 @@ const sampleProducts = [
       "https://images.unsplash.com/photo-1552346154-21d32810aba3?auto=format&fit=crop&w=800&q=80",
       "https://images.unsplash.com/photo-1584735935682-2f2b69dff9d2?auto=format&fit=crop&w=800&q=80"
     ],
-    sizes: ["US 8", "US 8.5", "US 9", "US 9.5", "US 10", "US 10.5", "US 11", "US 12"],
+    sizes: Array.from({ length: 14 }, (_, index) => String(index + 35)),
     colors: ["Chicago Red / White / Black"],
     description: "The classic 1985 silhouette returns with vintage distressing, aged pre-yellowed midsoles, cracked leather collars, and an authentic vintage receipt in the box. Authenticity guaranteed with double-boxed air freight to Accra."
   },
@@ -46,7 +46,7 @@ const sampleProducts = [
       "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&w=800&q=80",
       "https://images.unsplash.com/photo-1607522370275-f14206abe5d3?auto=format&fit=crop&w=800&q=80"
     ],
-    sizes: ["US 7.5", "US 8.5", "US 9", "US 9.5", "US 10", "US 11"],
+    sizes: Array.from({ length: 14 }, (_, index) => String(index + 35)),
     colors: ["Sail / University Red / Ridgerock"],
     description: "Iconic oversized reverse Swoosh with premium mocha nubuck, crisp sail leather overlays, and custom Cactus Jack embroidered heel insignias. Highly sought-after pre-order exclusive."
   },
@@ -70,7 +70,7 @@ const sampleProducts = [
       "https://images.unsplash.com/photo-1587563871167-1ee9c731aefb?auto=format&fit=crop&w=800&q=80",
       "https://images.unsplash.com/photo-1608231387042-66d1773070a5?auto=format&fit=crop&w=800&q=80"
     ],
-    sizes: ["US 7", "US 8", "US 8.5", "US 9", "US 10", "US 10.5", "US 11"],
+    sizes: Array.from({ length: 14 }, (_, index) => String(index + 35)),
     colors: ["Core Onyx Black"],
     description: "Monochrome stealth aesthetic with Primeknit re-engineered upper, post-dyed monofilament side stripe, and full-length encapsulated Boost sole unit for unmatched all-day comfort."
   },
@@ -94,7 +94,7 @@ const sampleProducts = [
       "https://images.unsplash.com/photo-1539185441755-769473a23570?auto=format&fit=crop&w=800&q=80",
       "https://images.unsplash.com/photo-1512374382149-233c42b6613c?auto=format&fit=crop&w=800&q=80"
     ],
-    sizes: ["US 6", "US 7", "US 7.5", "US 8", "US 8.5", "US 9", "US 10"],
+    sizes: Array.from({ length: 14 }, (_, index) => String(index + 35)),
     colors: ["Rain Cloud / Castlerock / White"],
     description: "Futuristic Y2K chunky runner silhouette featuring sway bars taken from the 990, dual-density ABZORB and SBS cushioning, and a sculptured pod midsole."
   },
@@ -118,7 +118,7 @@ const sampleProducts = [
       "https://images.unsplash.com/photo-1597045566677-8cf032ed6634?auto=format&fit=crop&w=800&q=80",
       "https://images.unsplash.com/photo-1515955656352-a1fa3ffcd111?auto=format&fit=crop&w=800&q=80"
     ],
-    sizes: ["US 4Y", "US 5Y", "US 6Y", "US 7Y", "US 8", "US 9", "US 10"],
+    sizes: Array.from({ length: 14 }, (_, index) => String(index + 35)),
     colors: ["Black / White"],
     description: "The timeless clean contrast two-tone staple. Smooth leather upper with padded nylon tongue and durable rubber traction outsole."
   },
@@ -266,7 +266,7 @@ const sampleProducts = [
       "https://images.unsplash.com/photo-1582588678413-dbf45f4823e9?auto=format&fit=crop&w=800&q=80",
       "https://images.unsplash.com/photo-1560769629-975ec94e6a86?auto=format&fit=crop&w=800&q=80"
     ],
-    sizes: ["EU 40", "EU 41", "EU 42", "EU 43", "EU 44", "EU 45"],
+    sizes: Array.from({ length: 14 }, (_, index) => String(index + 35)),
     colors: ["Triple Black", "White / Light Grey"],
     description: "Multifaceted high-tech layered cage mesh and nylon sneaker with articulated chunky sole, printed sizing at toe edge, and embossed Track logo on the heel counter."
   },
@@ -290,7 +290,7 @@ const sampleProducts = [
       "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=800&q=80",
       "https://images.unsplash.com/photo-1514989940723-e8e51635b782?auto=format&fit=crop&w=800&q=80"
     ],
-    sizes: ["EU 41", "EU 42", "EU 43", "EU 44", "EU 45"],
+    sizes: Array.from({ length: 14 }, (_, index) => String(index + 35)),
     colors: ["Black / White Transparent Oblique"],
     description: "Crafted in clear transparent mesh over Dior Oblique motif fabric, contrast white rubber sole with DIOR signature insert, and reinforced back pull tab."
   },

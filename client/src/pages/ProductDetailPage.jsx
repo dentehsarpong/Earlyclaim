@@ -18,6 +18,8 @@ import { useCurrency } from '../context/CurrencyContext';
 import { useCart } from '../context/CartContext';
 import ProductCard from '../components/ProductCard';
 import ShipFromBadge from '../components/ShipFromBadge';
+import { getColorSwatch } from '../utils/colorSwatch';
+import { getImageUrl } from '../utils/imageHelper';
 
 export default function ProductDetailPage() {
   const { idOrSlug } = useParams();
@@ -85,6 +87,18 @@ export default function ProductDetailPage() {
     navigate('/checkout');
   };
 
+  const selectColor = (color) => {
+    setSelectedColor(color);
+    const matchingImage = (product.imageColors || []).findIndex(item => String(item || '').trim().toLowerCase() === String(color).trim().toLowerCase());
+    if (matchingImage >= 0) setSelectedImg(matchingImage);
+  };
+
+  const selectImage = (index) => {
+    setSelectedImg(index);
+    const imageColor = product.imageColors?.[index];
+    if (imageColor) setSelectedColor(imageColor);
+  };
+
   const handleAddToCart = () => {
     setDepositMode(depositChoice);
     addToCart(product, selectedSize, selectedColor, qty);
@@ -109,7 +123,7 @@ export default function ProductDetailPage() {
           <div className="lg:col-span-7 space-y-4">
             <div className="aspect-[4/3] rounded-3xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 overflow-hidden flex items-center justify-center p-4 relative group">
               <img
-                src={product.images?.[selectedImg] || 'https://images.unsplash.com/photo-1552346154-21d32810aba3?auto=format&fit=crop&w=800&q=80'}
+                src={getImageUrl(product.images?.[selectedImg])}
                 alt={product.name}
                 className="w-full h-full object-contain rounded-2xl group-hover:scale-105 transition-transform duration-500"
               />
@@ -124,7 +138,7 @@ export default function ProductDetailPage() {
                 {product.images.map((img, i) => (
                   <button
                     key={i}
-                    onClick={() => setSelectedImg(i)}
+                    onClick={() => selectImage(i)}
                     className={`w-20 h-20 rounded-2xl overflow-hidden border-2 bg-white dark:bg-zinc-950 p-1 transition ${
                       selectedImg === i ? 'border-black dark:border-white shadow-md' : 'border-zinc-200 dark:border-zinc-800 opacity-60'
                     }`}
@@ -247,7 +261,7 @@ export default function ProductDetailPage() {
             {product.sizes && product.sizes.length > 0 && (
               <div>
                 <label className="text-xs font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300 block mb-2">
-                  Select Size: <span className="text-black dark:text-white">{selectedSize}</span>
+                  {product.category === 'Sneakers' || /sneaker/i.test(product.name) ? 'Select EU Size:' : 'Select Size:'} <span className="text-black dark:text-white">{selectedSize}</span>
                 </label>
                 <div className="flex flex-wrap gap-2">
                   {product.sizes.map((s) => (
@@ -277,14 +291,15 @@ export default function ProductDetailPage() {
                   {product.colors.map((c) => (
                     <button
                       key={c}
-                      onClick={() => setSelectedColor(c)}
-                      className={`px-4 py-2 rounded-xl text-xs font-semibold border transition ${
+                      onClick={() => selectColor(c)}
+                      className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold border transition ${
                         selectedColor === c
                           ? 'bg-black text-white dark:bg-white dark:text-black border-black dark:border-white shadow-sm'
                           : 'bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 border-zinc-300 dark:border-zinc-700'
                       }`}
                     >
-                      {c}
+                      <span aria-hidden="true" className="inline-block w-3.5 h-3.5 rounded-full border border-black/20 dark:border-white/30" style={{ background: getColorSwatch(c) }} />
+                      <span>{c}</span>
                     </button>
                   ))}
                 </div>

@@ -23,6 +23,9 @@ export const CartProvider = ({ children }) => {
     setCartItems(prev => {
       const size = selectedSize || (product.sizes && product.sizes[0]) || 'Standard';
       const color = selectedColor || (product.colors && product.colors[0]) || 'Default';
+      const colorImageIndex = (product.imageColors || []).findIndex(item => String(item || '').trim().toLowerCase() === String(color).trim().toLowerCase());
+      const selectedImage = product.images?.[colorImageIndex >= 0 ? colorImageIndex : 0];
+      const selectedProduct = { ...product, selectedImage };
       const existingIndex = prev.findIndex(
         item => item.product.id === product.id && item.size === size && item.color === color
       );
@@ -30,9 +33,10 @@ export const CartProvider = ({ children }) => {
       if (existingIndex > -1) {
         const updated = [...prev];
         updated[existingIndex].quantity += quantity;
+        updated[existingIndex].product = selectedProduct;
         return updated;
       } else {
-        return [...prev, { product, size, color, quantity }];
+        return [...prev, { product: selectedProduct, size, color, quantity }];
       }
     });
     setIsCartOpen(true);

@@ -33,6 +33,14 @@ import { useCurrency } from '../context/CurrencyContext';
 import NotificationBell from '../components/NotificationBell';
 import ShipFromBadge from '../components/ShipFromBadge';
 
+const SNEAKER_SIZE_OPTIONS = Array.from({ length: 14 }, (_, index) => String(index + 35));
+const CLOTHING_SIZE_OPTIONS = ['Small', 'Medium', 'Large', 'Extra Large'];
+const recommendedSizes = (category) => category === 'Sneakers'
+  ? SNEAKER_SIZE_OPTIONS
+  : ['Jeans', 'Designer Brands'].includes(category)
+    ? CLOTHING_SIZE_OPTIONS
+    : ['One Size'];
+
 export default function AdminDashboardPage() {
   const { user, token, openAuthModal } = useAuth();
   const { formatPrice } = useCurrency();
@@ -76,8 +84,9 @@ export default function AdminDashboardPage() {
     priceGHS: '',
     priceUSD: '',
     depositPercent: 50,
-    sizes: 'US 8, US 9, US 10, US 11',
-    colors: 'Black / White',
+    sizes: SNEAKER_SIZE_OPTIONS.join(', '),
+    colors: 'Black, White, Red, Blue',
+    imageColors: ['Black'],
     stock: '',
     shipFromCountry: 'US',
     estimatedDays: '10–18 Days',
@@ -118,41 +127,29 @@ export default function AdminDashboardPage() {
   const fetchAdminData = async () => {
     if (!token) return;
     setLoading(true);
-    const authHeaders = { Authorization: `Bearer ${token}` };
-    const resources = [
-      ['stats', '/api/admin/stats', authHeaders, data => setStats(data.stats)],
-      ['orders', '/api/admin/orders', authHeaders, data => setOrders(data.orders || [])],
-      ['Paste & Buy requests', '/api/admin/requests', authHeaders, data => setRequests(data.requests || [])],
-      ['products', '/api/products?limit=200', { ...authHeaders, 'x-admin': 'true' }, data => setProducts(data.products || [])],
-      ['customers', '/api/admin/customers', authHeaders, data => setCustomers(data.customers || [])],
-      ['categories', '/api/admin/categories', authHeaders, data => setCategories(data.categories || [])],
-      ['banners', '/api/admin/banners/all', authHeaders, data => setBanners(data.banners || [])],
-      ['shipping rates', '/api/admin/shipping-rates', authHeaders, data => setShippingRates(data.rates || {})],
-      ['audit log', '/api/admin/audit-log', authHeaders, data => setAuditLogs(data.logs || [])]
-    ];
-
-    const results = await Promise.allSettled(resources.map(async ([name, path, headers]) => {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || ''}${path}`, { headers });
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/admin/dashboard`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       const data = await response.json();
       if (!response.ok || !data.success) {
-        throw new Error(data.message || `${name} request failed (${response.status})`);
+        throw new Error(data.message || `Dashboard request failed (${response.status})`);
       }
-      return data;
-    }));
-
-    const failedResources = [];
-    results.forEach((result, index) => {
-      const [name, , , applyData] = resources[index];
-      if (result.status === 'fulfilled') applyData(result.value);
-      else {
-        console.error(`Admin ${name} fetch error:`, result.reason);
-        failedResources.push(name);
-      }
-    });
-    if (failedResources.length) {
-      showToast(`Could not load: ${failedResources.join(', ')}`, 'error');
+      setStats(data.stats || null);
+      setOrders(data.orders || []);
+      setRequests(data.requests || []);
+      setProducts(data.products || []);
+      setCustomers(data.customers || []);
+      setCategories(data.categories || []);
+      setBanners(data.banners || []);
+      setShippingRates(data.rates || {});
+      setAuditLogs(data.logs || []);
+    } catch (err) {
+      console.error('Admin dashboard fetch error:', err);
+      showToast(err.message || 'Could not load admin data', 'error');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   useEffect(() => {
@@ -279,8 +276,9 @@ export default function AdminDashboardPage() {
       priceGHS: '',
       priceUSD: '',
       depositPercent: 50,
-      sizes: 'US 8, US 9, US 10, US 11',
-      colors: 'Black / White',
+      sizes: SNEAKER_SIZE_OPTIONS.join(', '),
+      colors: 'Black, White, Red, Blue',
+      imageColors: ['Black'],
       stock: '10',
       shipFromCountry: 'US',
       estimatedDays: '10–18 Days',
@@ -304,6 +302,7 @@ export default function AdminDashboardPage() {
       depositPercent: prod.depositPercent || 50,
       sizes: Array.isArray(prod.sizes) ? prod.sizes.join(', ') : (prod.sizes || ''),
       colors: Array.isArray(prod.colors) ? prod.colors.join(', ') : (prod.colors || ''),
+      imageColors: (prod.imageColors || []).slice(),
       stock: prod.stock !== undefined && prod.stock !== null ? String(prod.stock) : '',
       shipFromCountry: prod.shipFromCountry || 'US',
       estimatedDays: prod.estimatedDays || '10–18 Days',
@@ -320,6 +319,10 @@ export default function AdminDashboardPage() {
       showToast('Product name and price in GHS are required', 'error');
       return;
     }
+    if (prodForm.images.some(image => image.startsWith('data:image/'))) {
+      showToast('One or more photos are not stored yet. Upload them again before saving.', 'error');
+      return;
+    }
 
     const payload = {
       name: prodForm.name.trim(),
@@ -332,6 +335,7 @@ export default function AdminDashboardPage() {
       depositPercent: Number(prodForm.depositPercent) || 50,
       sizes: prodForm.sizes.split(',').map(s => s.trim()).filter(Boolean),
       colors: prodForm.colors.split(',').map(c => c.trim()).filter(Boolean),
+      imageColors: prodForm.imageColors,
       stock: prodForm.stock !== '' ? Number(prodForm.stock) : null,
       shipFromCountry: prodForm.shipFromCountry,
       estimatedDays: prodForm.estimatedDays,
@@ -394,6 +398,8 @@ export default function AdminDashboardPage() {
       if (data.success) {
         showToast('Product permanently deleted');
         fetchAdminData();
+      } else {
+        showToast(data.message || 'Failed to delete product', 'error');
       }
     } catch {
       showToast('Failed to delete product', 'error');
@@ -421,8 +427,8 @@ export default function AdminDashboardPage() {
       return;
     }
 
-    if (file.size > 10 * 1024 * 1024) {
-      showToast('File size must be less than 10MB', 'error');
+    if (file.size > 5 * 1024 * 1024) {
+      showToast('File size must be less than 5 MB', 'error');
       return;
     }
 
@@ -442,29 +448,26 @@ export default function AdminDashboardPage() {
           })
         });
         const data = await res.json();
-        if (data.success && data.url) {
+        if (res.ok && data.success && data.url && !data.url.startsWith('data:image/')) {
           setProdForm(prev => ({
             ...prev,
-            images: [...prev.images, data.url]
+            images: [...prev.images, data.url],
+            imageColors: (() => {
+              const imageColors = [...(prev.imageColors || [])];
+              while (imageColors.length < prev.images.length) imageColors.push('');
+              imageColors.push(prev.colors.split(',').map(color => color.trim()).filter(Boolean)[0] || '');
+              return imageColors;
+            })()
           }));
           showToast('Image uploaded and preview ready!');
         } else {
-          // If server upload failed, fallback to local base64 preview directly
-          setProdForm(prev => ({
-            ...prev,
-            images: [...prev.images, reader.result]
-          }));
-          showToast('Image loaded as local preview');
+          showToast(data.message || 'Image could not be stored. Check Supabase storage and try again.', 'error');
         }
       } catch (err) {
-        // Fallback to base64 preview
-        setProdForm(prev => ({
-          ...prev,
-          images: [...prev.images, reader.result]
-        }));
-        showToast('Image loaded as local preview');
+        showToast(err.message || 'Image upload failed. Check your connection and try again.', 'error');
       } finally {
         setUploadingFile(false);
+        e.target.value = '';
       }
     };
     reader.onerror = () => {
@@ -522,7 +525,8 @@ export default function AdminDashboardPage() {
   const handleRemoveImage = (index) => {
     setProdForm(prev => ({
       ...prev,
-      images: prev.images.filter((_, i) => i !== index)
+      images: prev.images.filter((_, i) => i !== index),
+      imageColors: (prev.imageColors || []).filter((_, i) => i !== index)
     }));
   };
 
@@ -532,7 +536,10 @@ export default function AdminDashboardPage() {
       const imgs = [...prev.images];
       const [chosen] = imgs.splice(index, 1);
       imgs.unshift(chosen);
-      return { ...prev, images: imgs };
+      const imageColors = [...(prev.imageColors || [])];
+      const [chosenColor] = imageColors.splice(index, 1);
+      imageColors.unshift(chosenColor || '');
+      return { ...prev, images: imgs, imageColors };
     });
   };
 
@@ -542,7 +549,10 @@ export default function AdminDashboardPage() {
       const imgs = [...prev.images];
       const [item] = imgs.splice(fromIndex, 1);
       imgs.splice(toIndex, 0, item);
-      return { ...prev, images: imgs };
+      const imageColors = [...(prev.imageColors || [])];
+      const [itemColor] = imageColors.splice(fromIndex, 1);
+      imageColors.splice(toIndex, 0, itemColor || '');
+      return { ...prev, images: imgs, imageColors };
     });
   };
 
@@ -1070,7 +1080,7 @@ export default function AdminDashboardPage() {
                     {paginatedProducts.length === 0 ? (
                       <tr>
                         <td colSpan={7} className="p-8 text-center text-zinc-500">
-                          No products found matching filters.
+                          {loading ? 'Loading products…' : 'No products found matching filters.'}
                         </td>
                       </tr>
                     ) : (
@@ -1834,7 +1844,11 @@ export default function AdminDashboardPage() {
                   <label className="font-bold uppercase text-[10px] text-zinc-400 block mb-1">Category *</label>
                   <select
                     value={prodForm.category}
-                    onChange={(e) => setProdForm({ ...prodForm, category: e.target.value })}
+                    onChange={(e) => setProdForm({
+                      ...prodForm,
+                      category: e.target.value,
+                      sizes: recommendedSizes(e.target.value).join(', ')
+                    })}
                     className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 p-2.5 rounded-xl text-black dark:text-white"
                   >
                     {categories.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
@@ -1914,14 +1928,17 @@ export default function AdminDashboardPage() {
                 </div>
 
                 <div>
-                  <label className="font-bold uppercase text-[10px] text-zinc-400 block mb-1">Available Sizes (Comma-separated)</label>
+                  <label className="font-bold uppercase text-[10px] text-zinc-400 block mb-1">Available Sizes (comma-separated)</label>
                   <input
                     type="text"
-                    placeholder="US 8, US 9, US 10"
+                    placeholder={recommendedSizes(prodForm.category).join(', ')}
                     value={prodForm.sizes}
                     onChange={(e) => setProdForm({ ...prodForm, sizes: e.target.value })}
                     className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 p-2.5 rounded-xl text-black dark:text-white"
                   />
+                  <p className="mt-1 text-[9px] text-zinc-400">
+                    {prodForm.category === 'Sneakers' ? 'Suggested EU sizes: 35–48.' : ['Jeans', 'Designer Brands'].includes(prodForm.category) ? 'Suggested clothing sizes: Small, Medium, Large, Extra Large.' : 'Enter each available size separated by a comma.'}
+                  </p>
                 </div>
 
                 <div>
@@ -1954,6 +1971,7 @@ export default function AdminDashboardPage() {
                     Product Photos ({prodForm.images.length}) • First image is primary
                   </span>
                 </div>
+                <p className="text-[10px] text-zinc-500">Assign each photo a color. Customers will see the matching product photo when they choose that color.</p>
 
                 {/* Thumbnails row with reorder controls */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -2013,6 +2031,24 @@ export default function AdminDashboardPage() {
                           </button>
                         </div>
                       </div>
+                      <label className="block mt-2 px-1 text-[9px] font-bold uppercase text-zinc-400">
+                        Photo color
+                        <select
+                          value={prodForm.imageColors?.[idx] || ''}
+                          onChange={(e) => setProdForm(prev => {
+                            const imageColors = [...(prev.imageColors || [])];
+                            while (imageColors.length < prev.images.length) imageColors.push('');
+                            imageColors[idx] = e.target.value;
+                            return { ...prev, imageColors };
+                          })}
+                          className="mt-1 w-full rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-2 py-1.5 text-[10px] font-medium normal-case text-zinc-800 dark:text-zinc-200"
+                        >
+                          <option value="">All colors / general photo</option>
+                          {prodForm.colors.split(',').map(color => color.trim()).filter(Boolean).map(color => (
+                            <option key={color} value={color}>{color}</option>
+                          ))}
+                        </select>
+                      </label>
                     </div>
                   ))}
                 </div>

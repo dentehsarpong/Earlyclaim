@@ -142,7 +142,7 @@ Open **[http://localhost:5000](http://localhost:5000)** to view the production a
 The root `render.yaml` describes one Render web service that builds the Vite frontend and serves it from Express. This keeps the frontend and API on one origin. It also mounts a persistent disk for the JSON database, so product records and uploaded image URLs survive service restarts and deploys. Product image files themselves are stored in the configured Supabase Storage bucket.
 
 1. Push the repository to GitHub and create a **Blueprint** in Render from that repository.
-2. Set `SUPABASE_URL` and `SUPABASE_KEY` in the Render service environment. The Supabase `product-images` bucket must exist and allow public reads for uploaded product images.
+2. Set `SUPABASE_URL`, `SUPABASE_KEY`, and `SUPABASE_SERVICE_ROLE_KEY` in the Render service environment. Keep the service role key server-side only. The Supabase `product-images` bucket must exist and allow public reads for uploaded product images. The service role key is required for deleting stored images unless the bucket has a suitable Storage DELETE policy.
 3. Deploy the service. Render generates `JWT_SECRET` and attaches a 1 GB persistent disk at `/var/data`.
 
 The service uses `npm install --prefix server && npm install --prefix client && npm run build` to build and `npm start` to serve the full app. Leave `VITE_API_URL` unset so frontend API calls use the same Render origin. The persistent disk requires a Render plan that supports disks.

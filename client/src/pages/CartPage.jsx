@@ -80,7 +80,7 @@ export default function CartPage() {
                 <div className="flex items-center gap-4">
                   <div className="w-20 h-20 rounded-xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 overflow-hidden flex-shrink-0 flex items-center justify-center p-1">
                     <img
-                      src={item.product.images?.[0]}
+                      src={item.product.selectedImage || item.product.images?.[0]}
                       alt={item.product.name}
                       className="w-full h-full object-cover rounded-lg"
                     />

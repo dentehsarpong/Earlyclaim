@@ -121,7 +121,7 @@ export default function CheckoutPage() {
         items: cartItems.map(item => ({
           productId: item.product.id,
           name: item.product.name,
-          image: item.product.images?.[0],
+          image: item.product.selectedImage || item.product.images?.[0],
           size: item.size,
           color: item.color,
           priceGHS: item.product.priceGHS,
@@ -469,7 +469,7 @@ export default function CheckoutPage() {
                 {cartItems.map((item, idx) => (
                   <div key={idx} className="flex items-center gap-3 text-xs">
                     <div className="w-12 h-12 rounded-xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 overflow-hidden flex-shrink-0 flex items-center justify-center p-0.5">
-                      <img src={item.product.images?.[0]} alt="" className="w-full h-full object-cover rounded-lg" />
+                      <img src={item.product.selectedImage || item.product.images?.[0]} alt="" className="w-full h-full object-cover rounded-lg" />
                     </div>
                     <div className="flex-1 truncate">
                       <p className="font-semibold text-black dark:text-white truncate">{item.product.name}</p>
