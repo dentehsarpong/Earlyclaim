@@ -17,6 +17,7 @@ import { useCart } from '../context/CartContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { useAuth } from '../context/AuthContext';
 import ShippingMethodSelector from '../components/ShippingMethodSelector';
+import { API_BASE_URL } from '../apiConfig';
 
 const GHANA_REGIONS = [
   'Greater Accra',
@@ -62,7 +63,7 @@ export default function CheckoutPage() {
   const [shippingRates, setShippingRates] = useState({});
 
   useEffect(() => {
-    fetch('/api/orders/shipping-rates')
+    fetch(`${API_BASE_URL}/api/orders/shipping-rates`)
       .then(res => res.json())
       .then(data => {
         if (data.success && data.rates) setShippingRates(data.rates);
@@ -134,7 +135,7 @@ export default function CheckoutPage() {
         manualTransactionId: manualTxId.trim()
       };
 
-      const res = await fetch('/api/orders/checkout', {
+      const res = await fetch(`${API_BASE_URL}/api/orders/checkout`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -147,7 +148,7 @@ export default function CheckoutPage() {
       if (data.success && data.order) {
         // If manual payment, submit reference too
         if (paymentMethod === 'manual_momo' && manualTxId.trim()) {
-          await fetch('/api/orders/submit-manual-proof', {
+          await fetch(`${API_BASE_URL}/api/orders/submit-manual-proof`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
