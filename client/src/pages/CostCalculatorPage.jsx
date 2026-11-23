@@ -12,6 +12,9 @@ const CATEGORY_WEIGHTS = {
   Jewelry: { weight: 0.4, ratePerKg: 280 },
   Bags: { weight: 1.5, ratePerKg: 200 },
   Accessories: { weight: 0.5, ratePerKg: 160 },
+  Slides: { weight: 0.8, ratePerKg: 160 },
+  Caps: { weight: 0.3, ratePerKg: 160 },
+  Belts: { weight: 0.4, ratePerKg: 160 },
 };
 
 export default function CostCalculatorPage() {

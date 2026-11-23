@@ -173,7 +173,10 @@ function getInitialData() {
       { id: 'cat-perfumes', name: 'Perfumes', slug: 'perfumes', active: true },
       { id: 'cat-jewelry', name: 'Jewelry', slug: 'jewelry', active: true },
       { id: 'cat-bags', name: 'Bags', slug: 'bags', active: true },
-      { id: 'cat-accessories', name: 'Accessories', slug: 'accessories', active: true }
+      { id: 'cat-accessories', name: 'Accessories', slug: 'accessories', active: true },
+      { id: 'cat-slides', name: 'Slides', slug: 'slides', active: true },
+      { id: 'cat-caps', name: 'Caps', slug: 'caps', active: true },
+      { id: 'cat-belts', name: 'Belts', slug: 'belts', active: true }
     ],
     banners: [
       {
@@ -215,6 +218,13 @@ class Database {
           mutated = true;
         }
         if (!data.categories) { data.categories = getInitialData().categories; mutated = true; }
+        const existingCategoryNames = new Set(data.categories.map(category => category.name.toLowerCase()));
+        getInitialData().categories.forEach(category => {
+          if (!existingCategoryNames.has(category.name.toLowerCase())) {
+            data.categories.push(category);
+            mutated = true;
+          }
+        });
         if (!data.banners) { data.banners = getInitialData().banners; mutated = true; }
 
         // Migrate orders to have shippingMethod and adminViewed

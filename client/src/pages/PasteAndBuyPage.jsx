@@ -297,6 +297,9 @@ export default function PasteAndBuyPage() {
                       <option value="Jewelry">Jewelry</option>
                       <option value="Bags">Bags & Luggage</option>
                       <option value="Accessories">Accessories</option>
+                      <option value="Slides">Slides</option>
+                      <option value="Caps">Caps</option>
+                      <option value="Belts">Belts</option>
                     </select>
                   </div>
                 </div>

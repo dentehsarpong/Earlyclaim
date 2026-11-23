@@ -14,6 +14,9 @@ const CATEGORIES = [
   { name: "Women's", sub: 'Luxury Handbags, Jewelry, Fragrances' },
   { name: 'Kids', sub: 'Sneakers, Mini Streetwear' },
   { name: 'Accessories', sub: 'Caps, Sunglasses, Wallets' },
+  { name: 'Slides', sub: 'Slides, Sliders, Summer Sandals' },
+  { name: 'Caps', sub: 'Baseball Caps, Snapbacks, Beanies' },
+  { name: 'Belts', sub: 'Designer Belts, Leather Belts, Buckles' },
 ];
 
 export default function CategoryBar({ activeCategory, onSelectCategory }) {

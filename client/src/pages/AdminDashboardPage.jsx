@@ -115,37 +115,44 @@ export default function AdminDashboardPage() {
     setTimeout(() => setToast(null), 4000);
   };
 
-  const fetchAdminData = () => {
+  const fetchAdminData = async () => {
     if (!token) return;
     setLoading(true);
+    const authHeaders = { Authorization: `Bearer ${token}` };
+    const resources = [
+      ['stats', '/api/admin/stats', authHeaders, data => setStats(data.stats)],
+      ['orders', '/api/admin/orders', authHeaders, data => setOrders(data.orders || [])],
+      ['Paste & Buy requests', '/api/admin/requests', authHeaders, data => setRequests(data.requests || [])],
+      ['products', '/api/products?limit=200', { ...authHeaders, 'x-admin': 'true' }, data => setProducts(data.products || [])],
+      ['customers', '/api/admin/customers', authHeaders, data => setCustomers(data.customers || [])],
+      ['categories', '/api/admin/categories', authHeaders, data => setCategories(data.categories || [])],
+      ['banners', '/api/admin/banners/all', authHeaders, data => setBanners(data.banners || [])],
+      ['shipping rates', '/api/admin/shipping-rates', authHeaders, data => setShippingRates(data.rates || {})],
+      ['audit log', '/api/admin/audit-log', authHeaders, data => setAuditLogs(data.logs || [])]
+    ];
 
-    Promise.all([
-      fetch(`${import.meta.env.VITE_API_URL || ''}/api/admin/stats`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
-      fetch(`${import.meta.env.VITE_API_URL || ''}/api/admin/orders`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
-      fetch(`${import.meta.env.VITE_API_URL || ''}/api/admin/requests`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
-      fetch(`${import.meta.env.VITE_API_URL || ''}/api/products?limit=200`, { headers: { 'x-admin': 'true', Authorization: `Bearer ${token}` } }).then(r => r.json()),
-      fetch(`${import.meta.env.VITE_API_URL || ''}/api/admin/customers`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
-      fetch(`${import.meta.env.VITE_API_URL || ''}/api/admin/categories`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
-      fetch(`${import.meta.env.VITE_API_URL || ''}/api/admin/banners/all`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
-      fetch(`${import.meta.env.VITE_API_URL || ''}/api/admin/shipping-rates`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
-      fetch(`${import.meta.env.VITE_API_URL || ''}/api/admin/audit-log`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json())
-    ])
-      .then(([statsRes, ordersRes, requestsRes, productsRes, customersRes, catRes, banRes, ratesRes, auditRes]) => {
-        if (statsRes.success) setStats(statsRes.stats);
-        if (ordersRes.success) setOrders(ordersRes.orders || []);
-        if (requestsRes.success) setRequests(requestsRes.requests || []);
-        if (productsRes.success) setProducts(productsRes.products || []);
-        if (customersRes.success) setCustomers(customersRes.customers || []);
-        if (catRes.success) setCategories(catRes.categories || []);
-        if (banRes.success) setBanners(banRes.banners || []);
-        if (ratesRes.success) setShippingRates(ratesRes.rates || {});
-        if (auditRes.success) setAuditLogs(auditRes.logs || []);
-      })
-      .catch(err => {
-        console.error('Admin fetch error:', err);
-        showToast('Error loading some admin data', 'error');
-      })
-      .finally(() => setLoading(false));
+    const results = await Promise.allSettled(resources.map(async ([name, path, headers]) => {
+      const response = await fetch(`${import.meta.env.VITE_API_URL || ''}${path}`, { headers });
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || `${name} request failed (${response.status})`);
+      }
+      return data;
+    }));
+
+    const failedResources = [];
+    results.forEach((result, index) => {
+      const [name, , , applyData] = resources[index];
+      if (result.status === 'fulfilled') applyData(result.value);
+      else {
+        console.error(`Admin ${name} fetch error:`, result.reason);
+        failedResources.push(name);
+      }
+    });
+    if (failedResources.length) {
+      showToast(`Could not load: ${failedResources.join(', ')}`, 'error');
+    }
+    setLoading(false);
   };
 
   useEffect(() => {
