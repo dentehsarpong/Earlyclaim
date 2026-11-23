@@ -1784,9 +1784,9 @@ export default function AdminDashboardPage() {
 
       {/* Product Create / Edit Modal */}
       {isProductModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm overflow-y-auto">
-          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 sm:p-8 max-w-2xl w-full my-8 space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-zinc-100 dark:border-zinc-800">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm overflow-hidden">
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 sm:p-8 max-w-2xl w-full max-h-[90vh] flex flex-col shadow-2xl overscroll-behavior-contain">
+            <div className="flex items-center justify-between pb-2 border-b border-zinc-100 dark:border-zinc-800 flex-shrink-0">
               <h3 className="text-base font-black uppercase text-black dark:text-white">
                 {editingProductId ? 'Edit Product Details' : 'Add New Product to Pre-Order'}
               </h3>
@@ -1798,7 +1798,7 @@ export default function AdminDashboardPage() {
               </button>
             </div>
 
-            <form onSubmit={handleSaveProduct} className="space-y-4 text-xs">
+            <form onSubmit={handleSaveProduct} className="flex-1 overflow-y-auto py-4 space-y-4 text-xs">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="sm:col-span-2">
                   <label className="font-bold uppercase text-[10px] text-zinc-400 block mb-1">Product Title *</label>
@@ -2052,32 +2052,33 @@ export default function AdminDashboardPage() {
                   )}
                 </div>
               )}
-
-              <div className="flex gap-2 pt-4 border-t border-zinc-200 dark:border-zinc-800">
-                <button
-                  type="submit"
-                  className="flex-1 py-3 rounded-full bg-black dark:bg-white text-white dark:text-black font-bold uppercase text-xs"
-                >
-                  {editingProductId ? 'Update Product' : 'Save & Publish'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setIsProductModalOpen(false)}
-                  className="px-5 py-3 rounded-full border border-zinc-300 dark:border-zinc-700 font-bold uppercase text-xs"
-                >
-                  Cancel
-                </button>
-              </div>
             </form>
+
+            <div className="flex gap-2 pt-4 border-t border-zinc-200 dark:border-zinc-800 flex-shrink-0">
+              <button
+                type="button"
+                onClick={handleSaveProduct}
+                className="flex-1 py-3 rounded-full bg-black dark:bg-white text-white dark:text-black font-bold uppercase text-xs"
+              >
+                {editingProductId ? 'Update Product' : 'Save & Publish'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsProductModalOpen(false)}
+                className="px-5 py-3 rounded-full border border-zinc-300 dark:border-zinc-700 font-bold uppercase text-xs"
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       )}
 
       {/* Verify & Quote Paste & Buy Request Modal */}
       {verifyModalReq && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm overflow-y-auto">
-          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 sm:p-8 max-w-lg w-full my-8 space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-zinc-100 dark:border-zinc-800">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm overflow-hidden">
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 sm:p-8 max-w-lg w-full max-h-[90vh] flex flex-col shadow-2xl overscroll-behavior-contain">
+            <div className="flex items-center justify-between pb-2 border-b border-zinc-100 dark:border-zinc-800 flex-shrink-0">
               <div>
                 <span className="text-[10px] font-bold uppercase text-zinc-400 font-mono">
                   Ticket #{verifyModalReq.requestNumber}
@@ -2094,7 +2095,7 @@ export default function AdminDashboardPage() {
               </button>
             </div>
 
-            <div className="space-y-3 text-xs">
+            <div className="flex-1 overflow-y-auto py-4 space-y-3 text-xs">
               <div className="p-3 rounded-2xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 space-y-1.5">
                 <p className="font-bold text-black dark:text-white text-sm">{verifyModalReq.productName}</p>
                 <p className="text-zinc-500">Customer: <strong>{verifyModalReq.customerName}</strong> ({verifyModalReq.customerPhone})</p>
@@ -2194,7 +2195,7 @@ export default function AdminDashboardPage() {
               </div>
             </div>
 
-            <div className="flex gap-2 pt-3 border-t border-zinc-200 dark:border-zinc-800">
+            <div className="flex gap-2 pt-3 border-t border-zinc-200 dark:border-zinc-800 flex-shrink-0">
               <button
                 type="button"
                 onClick={() => handleSaveVerification(true)}

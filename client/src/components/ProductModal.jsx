@@ -42,8 +42,8 @@ export default function ProductModal({ product, onClose }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="relative w-full max-w-3xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm overflow-hidden">
+      <div className="relative w-full max-w-3xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col overscroll-behavior-contain">
         {/* Close Button */}
         <button
           onClick={onClose}
@@ -52,7 +52,7 @@ export default function ProductModal({ product, onClose }) {
           <X className="w-5 h-5" />
         </button>
 
-        <div className="overflow-y-auto p-6 sm:p-8">
+        <div className="flex-1 overflow-y-auto p-6 sm:p-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Left: Gallery */}
             <div className="space-y-4">
