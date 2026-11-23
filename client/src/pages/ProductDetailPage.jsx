@@ -20,6 +20,7 @@ import ProductCard from '../components/ProductCard';
 import ShipFromBadge from '../components/ShipFromBadge';
 import { getColorSwatch } from '../utils/colorSwatch';
 import { getImageUrl } from '../utils/imageHelper';
+import { API_BASE_URL } from '../apiConfig';
 
 export default function ProductDetailPage() {
   const { idOrSlug } = useParams();
@@ -39,7 +40,7 @@ export default function ProductDetailPage() {
 
   useEffect(() => {
     setLoading(true);
-    fetch(`/api/products/${idOrSlug}`)
+    fetch(`${API_BASE_URL}/api/products/${idOrSlug}`)
       .then(res => res.json())
       .then(data => {
         if (data.success && data.product) {

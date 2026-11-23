@@ -324,7 +324,9 @@ router.post('/', requireAdmin, (req, res) => {
 
     data.products.unshift(newProduct);
     logProductChange(data, newProduct.id, req.user.id, 'create', { name: newProduct.name, priceGHS: newProduct.priceGHS });
-    db.write(data);
+    if (!db.write(data)) {
+      return res.status(500).json({ success: false, message: 'Product image uploaded, but the product record could not be saved. Check the server database storage.' });
+    }
 
     res.status(201).json({ success: true, product: newProduct, message: 'Product created' });
   } catch (err) {

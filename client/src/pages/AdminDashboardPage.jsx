@@ -315,6 +315,10 @@ export default function AdminDashboardPage() {
   // Save Product (Create or Update)
   const handleSaveProduct = async (e) => {
     e.preventDefault();
+    if (uploadingFile) {
+      showToast('Wait for the image upload to finish before saving this product.', 'error');
+      return;
+    }
     if (!prodForm.name.trim() || !prodForm.priceGHS) {
       showToast('Product name and price in GHS are required', 'error');
       return;
@@ -2101,9 +2105,10 @@ export default function AdminDashboardPage() {
               <button
                 type="button"
                 onClick={handleSaveProduct}
-                className="flex-1 py-3 rounded-full bg-black dark:bg-white text-white dark:text-black font-bold uppercase text-xs"
+                disabled={uploadingFile}
+                className="flex-1 py-3 rounded-full bg-black dark:bg-white text-white dark:text-black font-bold uppercase text-xs disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {editingProductId ? 'Update Product' : 'Save & Publish'}
+                {uploadingFile ? 'Uploading image…' : editingProductId ? 'Update Product' : 'Save & Publish'}
               </button>
               <button
                 type="button"
