@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { API_BASE_URL } from './apiConfig';
 import { ThemeProvider } from './context/ThemeContext';
 import { CurrencyProvider } from './context/CurrencyContext';
 import { AuthProvider } from './context/AuthContext';
@@ -26,6 +27,11 @@ import CostCalculatorPage from './pages/CostCalculatorPage';
 import NotificationsPage from './pages/NotificationsPage';
 
 export default function App() {
+  // Silent health check to wake up Render backend on mount
+  useEffect(() => {
+    fetch(`${API_BASE_URL}/api/health`).catch(() => {});
+  }, []);
+
   return (
     <ThemeProvider>
       <CurrencyProvider>
