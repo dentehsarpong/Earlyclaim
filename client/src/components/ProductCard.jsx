@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Heart, ShoppingBag, Eye, Star, Clock } from 'lucide-react';
 import { useCurrency } from '../context/CurrencyContext';
 import { useAuth } from '../context/AuthContext';
-import { useCart } from '../context/CartContext';
 import { getImageUrl } from '../utils/imageHelper';
 import { getColorImageIndex } from '../utils/productVariants';
 import ShipFromBadge from './ShipFromBadge';
@@ -10,7 +9,6 @@ import ShipFromBadge from './ShipFromBadge';
 export default function ProductCard({ product, onQuickView }) {
   const { formatPrice } = useCurrency();
   const { user, toggleWishlist } = useAuth();
-  const { addToCart } = useCart();
   const [isHovered, setIsHovered] = useState(false);
   const [isLiked, setIsLiked] = useState(() => {
     return user && user.wishlist ? user.wishlist.includes(product.id) : false;
@@ -22,9 +20,9 @@ export default function ProductCard({ product, onQuickView }) {
     setIsLiked(result);
   };
 
-  const handleQuickPreorder = (e) => {
+  const handleChooseOptions = (e) => {
     e.stopPropagation();
-    addToCart(product, product.sizes?.[0] || 'Standard', product.colors?.[0] || 'Default', 1);
+    onQuickView(product);
   };
 
   const depositGHS = Math.round(product.priceGHS * 0.50);
@@ -78,11 +76,11 @@ export default function ProductCard({ product, onQuickView }) {
             }`}
           >
             <button
-              onClick={handleQuickPreorder}
+              onClick={handleChooseOptions}
               className="flex-1 py-2 rounded-xl bg-black dark:bg-white text-white dark:text-black font-bold text-xs uppercase tracking-wider shadow-lg hover:opacity-90 active:scale-95 flex items-center justify-center gap-1.5 transition"
             >
               <ShoppingBag className="w-3.5 h-3.5" />
-              <span>Pre-order</span>
+              <span>Choose options</span>
             </button>
             <button
               onClick={(e) => {
