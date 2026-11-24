@@ -412,6 +412,37 @@ export default function AdminDashboardPage() {
 
   // Image Management in Modal
   const [uploadingFile, setUploadingFile] = useState(false);
+  const [loadingStoredImages, setLoadingStoredImages] = useState(false);
+  const [storedImages, setStoredImages] = useState([]);
+  const [showStoredImages, setShowStoredImages] = useState(false);
+
+  const openStoredImages = async () => {
+    setLoadingStoredImages(true);
+    setShowStoredImages(true);
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/products/storage-images`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.message || 'Could not load stored images');
+      setStoredImages(data.images || []);
+    } catch (err) {
+      setShowStoredImages(false);
+      showToast(err.message || 'Could not load images from Supabase Storage', 'error');
+    } finally {
+      setLoadingStoredImages(false);
+    }
+  };
+
+  const attachStoredImage = (imageUrl) => {
+    setProdForm(prev => {
+      if (prev.images.includes(imageUrl)) return prev;
+      const imageColors = [...(prev.imageColors || [])];
+      while (imageColors.length < prev.images.length) imageColors.push('');
+      imageColors.push(prev.colors.split(',').map(color => color.trim()).filter(Boolean)[0] || '');
+      return { ...prev, images: [...prev.images, imageUrl], imageColors };
+    });
+  };
 
   // Paste & Buy Verification Modal state
   const [verifyModalReq, setVerifyModalReq] = useState(null);
@@ -2076,6 +2107,43 @@ export default function AdminDashboardPage() {
                       Supports JPG, PNG, WEBP (stored automatically)
                     </span>
                   </div>
+                  <button
+                    type="button"
+                    onClick={openStoredImages}
+                    className="px-4 py-2 rounded-xl border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-xs font-bold uppercase tracking-wider"
+                  >
+                    Choose an existing Supabase image
+                  </button>
+                  {showStoredImages && (
+                    <div className="rounded-xl border border-zinc-200 dark:border-zinc-700 p-3 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <p className="text-xs text-zinc-500">Select a stored image to attach it to this product.</p>
+                        <button type="button" onClick={() => setShowStoredImages(false)} aria-label="Close stored images" className="p-1 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800">
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                      {loadingStoredImages ? (
+                        <p className="text-xs text-zinc-500">Loading images…</p>
+                      ) : storedImages.length ? (
+                        <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 max-h-72 overflow-y-auto">
+                          {storedImages.map(image => (
+                            <button
+                              type="button"
+                              key={image.path}
+                              onClick={() => attachStoredImage(image.url)}
+                              className={`text-left rounded-lg border p-1 hover:border-black dark:hover:border-white ${prodForm.images.includes(image.url) ? 'border-green-600 ring-1 ring-green-600' : 'border-zinc-200 dark:border-zinc-700'}`}
+                              title={`Attach ${image.path}`}
+                            >
+                              <img src={image.url} alt="Stored product" className="w-full aspect-square object-cover rounded" loading="lazy" />
+                              <span className="block truncate text-[9px] text-zinc-500 mt-1">{image.path.split('/').pop()}</span>
+                            </button>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-xs text-zinc-500">No product images found in the bucket.</p>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
 

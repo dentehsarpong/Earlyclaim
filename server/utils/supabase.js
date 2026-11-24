@@ -42,6 +42,47 @@ const uploadToSupabase = async (fileBuffer, filename, mimetype) => {
   }
 };
 
+const listStoredProductImages = async () => {
+  const supabase = getSupabase();
+  const bucket = supabase.storage.from(BUCKET_NAME);
+  const images = [];
+  const maxImages = 500;
+
+  const visitFolder = async (folder = '', depth = 0) => {
+    if (depth > 4 || images.length >= maxImages || folder === 'paste-buy') return;
+    let offset = 0;
+
+    while (images.length < maxImages) {
+      const { data, error } = await bucket.list(folder, {
+        limit: 100,
+        offset,
+        sortBy: { column: 'name', order: 'asc' }
+      });
+      if (error) throw error;
+
+      for (const entry of data || []) {
+        const path = folder ? `${folder}/${entry.name}` : entry.name;
+        if (entry.id === null) {
+          if (path !== 'paste-buy') await visitFolder(path, depth + 1);
+          continue;
+        }
+
+        if (/\.(jpe?g|png|webp|gif|avif)$/i.test(entry.name) && !/storage-check/i.test(path)) {
+          const { data: publicData } = bucket.getPublicUrl(path);
+          images.push({ path, url: publicData.publicUrl, createdAt: entry.created_at || null });
+          if (images.length >= maxImages) break;
+        }
+      }
+
+      if (!data || data.length < 100) break;
+      offset += data.length;
+    }
+  };
+
+  await visitFolder();
+  return images;
+};
+
 const getStoragePath = (imageUrl) => {
   if (!imageUrl || !process.env.SUPABASE_URL) return null;
   try {
@@ -74,6 +115,7 @@ const deleteStoredImages = async (imageUrls = []) => {
 
 module.exports = {
   uploadToSupabase,
+  listStoredProductImages,
   deleteStoredImage,
   deleteStoredImages,
   getStoragePath

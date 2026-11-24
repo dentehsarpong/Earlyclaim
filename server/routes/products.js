@@ -3,7 +3,7 @@ const path = require('path');
 const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
 const db = require('../db');
-const { uploadToSupabase, deleteStoredImage, deleteStoredImages } = require('../utils/supabase');
+const { uploadToSupabase, listStoredProductImages, deleteStoredImage, deleteStoredImages } = require('../utils/supabase');
 const multer = require('multer');
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } });
 const { requireAdmin } = require('../middleware/auth');
@@ -11,6 +11,17 @@ const { requireAdmin } = require('../middleware/auth');
 
 const router = express.Router();
 const FALLBACK_PRODUCT_IMAGE = 'https://images.unsplash.com/photo-1552346154-21d32810aba3?auto=format&fit=crop&w=800&q=80';
+
+// Admin: Browse existing images in Supabase Storage so they can be attached to products.
+router.get('/storage-images', requireAdmin, async (req, res) => {
+  try {
+    const images = await listStoredProductImages();
+    res.json({ success: true, images });
+  } catch (err) {
+    console.error('Supabase image list error:', err);
+    res.status(500).json({ success: false, message: 'Could not load images from Supabase Storage' });
+  }
+});
 
 function logProductChange(data, productId, adminId, action, changes) {
   if (!data.productAuditLog) data.productAuditLog = [];
