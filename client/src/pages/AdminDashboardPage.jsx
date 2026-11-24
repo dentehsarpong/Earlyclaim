@@ -32,6 +32,7 @@ import { useAuth } from '../context/AuthContext';
 import { useCurrency } from '../context/CurrencyContext';
 import NotificationBell from '../components/NotificationBell';
 import ShipFromBadge from '../components/ShipFromBadge';
+import BulkProductImportModal from '../components/BulkProductImportModal';
 import { getVariantKey } from '../utils/productVariants';
 
 const SNEAKER_SIZE_OPTIONS = Array.from({ length: 14 }, (_, index) => String(index + 35));
@@ -75,6 +76,7 @@ export default function AdminDashboardPage() {
 
   // Product Management Modal State (Add / Edit)
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
+  const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
   const [editingProductId, setEditingProductId] = useState(null);
   const [prodForm, setProdForm] = useState({
     name: '',
@@ -1068,6 +1070,13 @@ export default function AdminDashboardPage() {
               </div>
 
               <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsBulkImportOpen(true)}
+                  className="px-3 py-2 rounded-xl bg-black text-white dark:bg-white dark:text-black text-xs font-bold uppercase tracking-wider"
+                >
+                  Bulk import
+                </button>
                 <select
                   value={productCategoryFilter}
                   onChange={(e) => { setProductCategoryFilter(e.target.value); setProductPage(1); }}
@@ -2223,6 +2232,14 @@ export default function AdminDashboardPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {isBulkImportOpen && (
+        <BulkProductImportModal
+          token={token}
+          onClose={() => setIsBulkImportOpen(false)}
+          onComplete={fetchAdminData}
+        />
       )}
 
       {/* Verify & Quote Paste & Buy Request Modal */}
