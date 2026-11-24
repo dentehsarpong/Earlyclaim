@@ -5,13 +5,14 @@ import { getImageUrl } from '../utils/imageHelper';
 import { useCurrency } from '../context/CurrencyContext';
 import { useCart } from '../context/CartContext';
 import { getColorSwatch } from '../utils/colorSwatch';
+import { getColorImageIndex } from '../utils/productVariants';
 
 export default function ProductModal({ product, onClose }) {
   const { formatPrice } = useCurrency();
   const { addToCart, setDepositMode } = useCart();
   const navigate = useNavigate();
 
-  const [selectedImg, setSelectedImg] = useState(0);
+  const [selectedImg, setSelectedImg] = useState(() => getColorImageIndex(product, product?.colors?.[0] || 'Default'));
   const [selectedSize, setSelectedSize] = useState(product?.sizes?.[0] || 'Standard');
   const [selectedColor, setSelectedColor] = useState(product?.colors?.[0] || 'Default');
   const [depositChoice, setDepositChoice] = useState('deposit_50'); // 'deposit_50' | 'full'
@@ -44,8 +45,7 @@ export default function ProductModal({ product, onClose }) {
 
   const selectColor = (color) => {
     setSelectedColor(color);
-    const matchingImage = (product.imageColors || []).findIndex(item => String(item || '').trim().toLowerCase() === String(color).trim().toLowerCase());
-    if (matchingImage >= 0) setSelectedImg(matchingImage);
+    setSelectedImg(getColorImageIndex(product, color));
   };
 
   const selectImage = (index) => {

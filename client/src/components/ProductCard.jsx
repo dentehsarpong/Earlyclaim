@@ -4,6 +4,7 @@ import { useCurrency } from '../context/CurrencyContext';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { getImageUrl } from '../utils/imageHelper';
+import { getColorImageIndex } from '../utils/productVariants';
 import ShipFromBadge from './ShipFromBadge';
 
 export default function ProductCard({ product, onQuickView }) {
@@ -64,7 +65,7 @@ export default function ProductCard({ product, onQuickView }) {
         {/* White-background Luxury Product Image */}
         <div className="w-full aspect-square rounded-xl bg-zinc-50 dark:bg-zinc-950 flex items-center justify-center overflow-hidden p-2 relative">
           <img
-            src={getImageUrl(product.images?.[0])}
+            src={getImageUrl(product.images?.[getColorImageIndex(product, product.colors?.[0])])}
             alt={product.name}
             className="w-full h-full object-cover rounded-lg group-hover:scale-105 transition-transform duration-500"
             loading="lazy"

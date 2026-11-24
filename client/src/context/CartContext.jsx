@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { getColorImageIndex } from '../utils/productVariants';
 
 const CartContext = createContext();
 
@@ -23,8 +24,8 @@ export const CartProvider = ({ children }) => {
     setCartItems(prev => {
       const size = selectedSize || (product.sizes && product.sizes[0]) || 'Standard';
       const color = selectedColor || (product.colors && product.colors[0]) || 'Default';
-      const colorImageIndex = (product.imageColors || []).findIndex(item => String(item || '').trim().toLowerCase() === String(color).trim().toLowerCase());
-      const selectedImage = product.images?.[colorImageIndex >= 0 ? colorImageIndex : 0];
+      const colorImageIndex = getColorImageIndex(product, color);
+      const selectedImage = product.images?.[colorImageIndex];
       const selectedProduct = { ...product, selectedImage };
       const existingIndex = prev.findIndex(
         item => item.product.id === product.id && item.size === size && item.color === color

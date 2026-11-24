@@ -20,6 +20,7 @@ import ProductCard from '../components/ProductCard';
 import ShipFromBadge from '../components/ShipFromBadge';
 import { getColorSwatch } from '../utils/colorSwatch';
 import { getImageUrl } from '../utils/imageHelper';
+import { getColorImageIndex } from '../utils/productVariants';
 import { API_BASE_URL } from '../apiConfig';
 
 export default function ProductDetailPage() {
@@ -47,8 +48,9 @@ export default function ProductDetailPage() {
           setProduct(data.product);
           setRelated(data.related || []);
           setSelectedSize(data.product.sizes?.[0] || 'Standard');
-          setSelectedColor(data.product.colors?.[0] || 'Default');
-          setSelectedImg(0);
+          const initialColor = data.product.colors?.[0] || 'Default';
+          setSelectedColor(initialColor);
+          setSelectedImg(getColorImageIndex(data.product, initialColor));
         }
       })
       .catch(err => console.error('Failed to load product detail:', err))
@@ -90,8 +92,7 @@ export default function ProductDetailPage() {
 
   const selectColor = (color) => {
     setSelectedColor(color);
-    const matchingImage = (product.imageColors || []).findIndex(item => String(item || '').trim().toLowerCase() === String(color).trim().toLowerCase());
-    if (matchingImage >= 0) setSelectedImg(matchingImage);
+    setSelectedImg(getColorImageIndex(product, color));
   };
 
   const selectImage = (index) => {
