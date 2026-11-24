@@ -32,6 +32,7 @@ import { useAuth } from '../context/AuthContext';
 import { useCurrency } from '../context/CurrencyContext';
 import NotificationBell from '../components/NotificationBell';
 import ShipFromBadge from '../components/ShipFromBadge';
+import { getVariantKey } from '../utils/productVariants';
 
 const SNEAKER_SIZE_OPTIONS = Array.from({ length: 14 }, (_, index) => String(index + 35));
 const CLOTHING_SIZE_OPTIONS = ['Small', 'Medium', 'Large', 'Extra Large'];
@@ -87,6 +88,7 @@ export default function AdminDashboardPage() {
     sizes: SNEAKER_SIZE_OPTIONS.join(', '),
     colors: 'Black, White, Red, Blue',
     imageColors: ['Black'],
+    unavailableVariants: [],
     stock: '',
     shipFromCountry: 'US',
     estimatedDays: '10–18 Days',
@@ -279,6 +281,7 @@ export default function AdminDashboardPage() {
       sizes: SNEAKER_SIZE_OPTIONS.join(', '),
       colors: 'Black, White, Red, Blue',
       imageColors: ['Black'],
+      unavailableVariants: [],
       stock: '10',
       shipFromCountry: 'US',
       estimatedDays: '10–18 Days',
@@ -303,6 +306,7 @@ export default function AdminDashboardPage() {
       sizes: Array.isArray(prod.sizes) ? prod.sizes.join(', ') : (prod.sizes || ''),
       colors: Array.isArray(prod.colors) ? prod.colors.join(', ') : (prod.colors || ''),
       imageColors: (prod.imageColors || []).slice(),
+      unavailableVariants: Array.isArray(prod.unavailableVariants) ? [...prod.unavailableVariants] : [],
       stock: prod.stock !== undefined && prod.stock !== null ? String(prod.stock) : '',
       shipFromCountry: prod.shipFromCountry || 'US',
       estimatedDays: prod.estimatedDays || '10–18 Days',
@@ -340,6 +344,7 @@ export default function AdminDashboardPage() {
       sizes: prodForm.sizes.split(',').map(s => s.trim()).filter(Boolean),
       colors: prodForm.colors.split(',').map(c => c.trim()).filter(Boolean),
       imageColors: prodForm.imageColors,
+      unavailableVariants: prodForm.unavailableVariants,
       stock: prodForm.stock !== '' ? Number(prodForm.stock) : null,
       shipFromCountry: prodForm.shipFromCountry,
       estimatedDays: prodForm.estimatedDays,
@@ -1985,6 +1990,36 @@ export default function AdminDashboardPage() {
                     onChange={(e) => setProdForm({ ...prodForm, colors: e.target.value })}
                     className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 p-2.5 rounded-xl text-black dark:text-white"
                   />
+                </div>
+
+                <div className="sm:col-span-2 rounded-xl border border-zinc-200 dark:border-zinc-800 p-3 space-y-2">
+                  <div>
+                    <label className="font-bold uppercase text-[10px] text-zinc-400 block">Size and color availability</label>
+                    <p className="text-[10px] text-zinc-500 mt-1">Turn off combinations customers cannot order. All combinations are available by default.</p>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 max-h-52 overflow-y-auto">
+                    {prodForm.sizes.split(',').map(size => size.trim()).filter(Boolean).flatMap(size =>
+                      prodForm.colors.split(',').map(color => color.trim()).filter(Boolean).map(color => {
+                        const variantKey = getVariantKey(size, color);
+                        const available = !prodForm.unavailableVariants.includes(variantKey);
+                        return (
+                          <label key={variantKey} className="flex items-center gap-2 rounded-lg bg-zinc-50 dark:bg-zinc-950 px-2.5 py-2 text-xs">
+                            <input
+                              type="checkbox"
+                              checked={available}
+                              onChange={() => setProdForm(prev => ({
+                                ...prev,
+                                unavailableVariants: available
+                                  ? [...prev.unavailableVariants, variantKey]
+                                  : prev.unavailableVariants.filter(key => key !== variantKey)
+                              }))}
+                            />
+                            <span>{size} · {color}</span>
+                          </label>
+                        );
+                      })
+                    )}
+                  </div>
                 </div>
 
                 <div className="sm:col-span-2">

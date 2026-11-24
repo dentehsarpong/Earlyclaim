@@ -494,6 +494,10 @@ export default function CheckoutPage() {
                   <span>Freight ({shippingMethod === 'sea' ? 'Sea' : 'Air'}):</span>
                   <span className="font-semibold text-black dark:text-white">{formatPrice(shippingCostGHS)}</span>
                 </div>
+                <div className="pt-2 border-t border-zinc-200 dark:border-zinc-800 flex justify-between font-bold text-sm text-black dark:text-white">
+                  <span>Order total incl. freight:</span>
+                  <span>{formatPrice(effectiveTotalGHS)}</span>
+                </div>
                 <div className="flex justify-between text-[11px] text-zinc-400">
                   <span>Estimated Delivery:</span>
                   <span className="font-medium text-zinc-600 dark:text-zinc-300">{currentRate.estimateWeeks || (shippingMethod === 'sea' ? '6–8 weeks' : '2–3 weeks')}</span>

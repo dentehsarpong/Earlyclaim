@@ -48,6 +48,24 @@ router.post('/checkout', optionalToken, async (req, res) => {
     const data = db.read();
     const rates = data.shippingRates || {};
 
+    const unavailableItem = items.find(item => {
+      const product = data.products.find(p => p.id === item.productId);
+      if (!product) return false;
+      if (product.stock !== null && product.stock !== undefined && Number(product.stock) <= 0) return true;
+      if (!Array.isArray(product.unavailableVariants)) return false;
+      const key = JSON.stringify([
+        String(item.size || 'Standard').trim().toLowerCase(),
+        String(item.color || 'Default').trim().toLowerCase()
+      ]);
+      return product.unavailableVariants.includes(key);
+    });
+    if (unavailableItem) {
+      return res.status(409).json({
+        success: false,
+        message: `Sorry, ${unavailableItem.name || 'this product'} is unavailable in the selected size and color. Please choose another option.`
+      });
+    }
+
     // Server-side price calculation — never trust client totals
     let totalGHS = 0;
     let totalUSD = 0;

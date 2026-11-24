@@ -5,16 +5,17 @@ import { getImageUrl } from '../utils/imageHelper';
 import { useCurrency } from '../context/CurrencyContext';
 import { useCart } from '../context/CartContext';
 import { getColorSwatch } from '../utils/colorSwatch';
-import { getColorImageIndex } from '../utils/productVariants';
+import { getColorImageIndex, getFirstAvailableVariant, isVariantAvailable, hasAvailableVariant } from '../utils/productVariants';
 
 export default function ProductModal({ product, onClose }) {
   const { formatPrice } = useCurrency();
   const { addToCart, setDepositMode } = useCart();
   const navigate = useNavigate();
+  const initialVariant = getFirstAvailableVariant(product);
 
-  const [selectedImg, setSelectedImg] = useState(() => getColorImageIndex(product, product?.colors?.[0] || 'Default'));
-  const [selectedSize, setSelectedSize] = useState(product?.sizes?.[0] || 'Standard');
-  const [selectedColor, setSelectedColor] = useState(product?.colors?.[0] || 'Default');
+  const [selectedImg, setSelectedImg] = useState(() => getColorImageIndex(product, initialVariant.color));
+  const [selectedSize, setSelectedSize] = useState(initialVariant.size);
+  const [selectedColor, setSelectedColor] = useState(initialVariant.color);
   const [depositChoice, setDepositChoice] = useState('deposit_50'); // 'deposit_50' | 'full'
   const [qty, setQty] = useState(1);
 
@@ -31,12 +32,14 @@ export default function ProductModal({ product, onClose }) {
   const remainingUSD = Math.round(product.priceUSD * (1 - depositRate) * qty);
 
   const handleAddToCart = () => {
+    if (!isVariantAvailable(product, selectedSize, selectedColor)) return;
     setDepositMode(depositChoice);
     addToCart(product, selectedSize, selectedColor, qty);
     onClose();
   };
 
   const handlePreorderNow = () => {
+    if (!isVariantAvailable(product, selectedSize, selectedColor)) return;
     setDepositMode(depositChoice);
     addToCart(product, selectedSize, selectedColor, qty);
     onClose();
@@ -102,7 +105,7 @@ export default function ProductModal({ product, onClose }) {
                 </div>
                 <div className="flex items-center gap-2">
                   <Plane className="w-4 h-4 text-black dark:text-white" />
-                  <span>Direct Air Cargo to Accra (Est: {product.estimatedDays})</span>
+                  <span>Estimated delivery: {product.estimatedDays}. Freight is confirmed at checkout.</span>
                 </div>
               </div>
             </div>
@@ -199,7 +202,10 @@ export default function ProductModal({ product, onClose }) {
                       <button
                         key={s}
                         onClick={() => setSelectedSize(s)}
-                        className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition ${
+                        disabled={product.colors?.length
+                          ? !product.colors.some(color => isVariantAvailable(product, s, color))
+                          : !isVariantAvailable(product, s, 'Default')}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition disabled:opacity-35 disabled:cursor-not-allowed ${
                           selectedSize === s
                             ? 'bg-black text-white dark:bg-white dark:text-black border-black dark:border-white'
                             : 'bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 border-zinc-300 dark:border-zinc-700 hover:border-black'
@@ -223,7 +229,10 @@ export default function ProductModal({ product, onClose }) {
                       <button
                         key={c}
                         onClick={() => selectColor(c)}
-                        className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-medium border transition ${
+                        disabled={product.sizes?.length
+                          ? !product.sizes.some(size => isVariantAvailable(product, size, c))
+                          : !isVariantAvailable(product, 'Standard', c)}
+                        className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-medium border transition disabled:opacity-35 disabled:cursor-not-allowed ${
                           selectedColor === c
                             ? 'bg-black text-white dark:bg-white dark:text-black border-black dark:border-white'
                             : 'bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 border-zinc-300 dark:border-zinc-700'
@@ -237,12 +246,17 @@ export default function ProductModal({ product, onClose }) {
                 </div>
               )}
 
+              {!hasAvailableVariant(product) && (
+                <p className="text-sm font-semibold text-red-600">This item is currently unavailable in all sizes and colors.</p>
+              )}
+
               {/* Action Buttons */}
               <div className="pt-3 space-y-2">
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     onClick={handleAddToCart}
-                    className="py-3 px-4 rounded-full border-2 border-black dark:border-white text-black dark:text-white font-bold text-xs uppercase tracking-wider hover:bg-zinc-100 dark:hover:bg-zinc-800 transition active:scale-95 flex items-center justify-center gap-2"
+                    disabled={!hasAvailableVariant(product) || !isVariantAvailable(product, selectedSize, selectedColor)}
+                    className="py-3 px-4 rounded-full border-2 border-black dark:border-white text-black dark:text-white font-bold text-xs uppercase tracking-wider hover:bg-zinc-100 dark:hover:bg-zinc-800 transition active:scale-95 flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     <ShoppingBag className="w-4 h-4" />
                     <span>Add to Cart</span>
@@ -250,7 +264,8 @@ export default function ProductModal({ product, onClose }) {
 
                   <button
                     onClick={handlePreorderNow}
-                    className="py-3 px-4 rounded-full bg-black dark:bg-white text-white dark:text-black font-bold text-xs uppercase tracking-wider hover:opacity-90 transition active:scale-95 shadow-lg flex items-center justify-center gap-2"
+                    disabled={!hasAvailableVariant(product) || !isVariantAvailable(product, selectedSize, selectedColor)}
+                    className="py-3 px-4 rounded-full bg-black dark:bg-white text-white dark:text-black font-bold text-xs uppercase tracking-wider hover:opacity-90 transition active:scale-95 shadow-lg flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     <span>Pre-Order Now</span>
                     <ArrowRight className="w-4 h-4" />

@@ -3,13 +3,14 @@ import { Heart, ShoppingBag, Eye, Star, Clock } from 'lucide-react';
 import { useCurrency } from '../context/CurrencyContext';
 import { useAuth } from '../context/AuthContext';
 import { getImageUrl } from '../utils/imageHelper';
-import { getColorImageIndex } from '../utils/productVariants';
+import { getColorImageIndex, getFirstAvailableVariant, hasAvailableVariant } from '../utils/productVariants';
 import ShipFromBadge from './ShipFromBadge';
 
 export default function ProductCard({ product, onQuickView }) {
   const { formatPrice } = useCurrency();
   const { user, toggleWishlist } = useAuth();
   const [isHovered, setIsHovered] = useState(false);
+  const defaultVariant = getFirstAvailableVariant(product);
   const [isLiked, setIsLiked] = useState(() => {
     return user && user.wishlist ? user.wishlist.includes(product.id) : false;
   });
@@ -39,8 +40,8 @@ export default function ProductCard({ product, onQuickView }) {
       <div className="relative">
         {/* Badges */}
         <div className="absolute top-2 left-2 z-10 flex flex-col gap-1 items-start">
-          <span className="px-2 py-0.5 rounded-full bg-black text-white dark:bg-white dark:text-black text-[9px] font-black uppercase tracking-wider shadow-sm">
-            PRE-ORDER
+                <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider shadow-sm ${hasAvailableVariant(product) ? 'bg-black text-white dark:bg-white dark:text-black' : 'bg-zinc-500 text-white'}`}>
+            {hasAvailableVariant(product) ? 'PRE-ORDER' : 'UNAVAILABLE'}
           </span>
           <span className="px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 text-[9px] font-bold border border-zinc-300 dark:border-zinc-700">
             50% DEPOSIT
@@ -63,7 +64,7 @@ export default function ProductCard({ product, onQuickView }) {
         {/* White-background Luxury Product Image */}
         <div className="w-full aspect-square rounded-xl bg-zinc-50 dark:bg-zinc-950 flex items-center justify-center overflow-hidden p-2 relative">
           <img
-            src={getImageUrl(product.images?.[getColorImageIndex(product, product.colors?.[0])])}
+            src={getImageUrl(product.images?.[getColorImageIndex(product, defaultVariant.color)])}
             alt={product.name}
             className="w-full h-full object-cover rounded-lg group-hover:scale-105 transition-transform duration-500"
             loading="lazy"

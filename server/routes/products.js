@@ -285,7 +285,7 @@ router.post('/', requireAdmin, (req, res) => {
       name, category, subCategory, brand, priceGHS, priceUSD,
       depositPercent, estimatedDays, description, images,
       sizes, colors, tag, gender, shipFromCountry, visibility,
-      stock
+      stock, unavailableVariants
     } = req.body;
 
     if (Array.isArray(images) && images.some(image => typeof image === 'string' && image.startsWith('data:image/'))) {
@@ -329,6 +329,7 @@ router.post('/', requireAdmin, (req, res) => {
       shipFromCountry: shipFromCountry || 'US',
       visibility: visibility || 'published',
       stock: stock !== undefined ? Number(stock) : null,
+      unavailableVariants: Array.isArray(unavailableVariants) ? unavailableVariants : [],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
@@ -356,6 +357,9 @@ router.put('/:id', requireAdmin, async (req, res) => {
 
     // Sanitize price fields to prevent NaN in DB
     const updates = { ...req.body };
+    if (updates.unavailableVariants !== undefined && !Array.isArray(updates.unavailableVariants)) {
+      return res.status(400).json({ success: false, message: 'unavailableVariants must be an array' });
+    }
     if (Array.isArray(updates.images) && updates.images.some(image => typeof image === 'string' && image.startsWith('data:image/'))) {
       return res.status(400).json({ success: false, message: 'Upload images to storage before saving the product' });
     }

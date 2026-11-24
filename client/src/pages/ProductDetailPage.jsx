@@ -20,7 +20,7 @@ import ProductCard from '../components/ProductCard';
 import ShipFromBadge from '../components/ShipFromBadge';
 import { getColorSwatch } from '../utils/colorSwatch';
 import { getImageUrl } from '../utils/imageHelper';
-import { getColorImageIndex } from '../utils/productVariants';
+import { getColorImageIndex, getFirstAvailableVariant, isVariantAvailable, hasAvailableVariant } from '../utils/productVariants';
 import { API_BASE_URL } from '../apiConfig';
 
 export default function ProductDetailPage() {
@@ -47,8 +47,9 @@ export default function ProductDetailPage() {
         if (data.success && data.product) {
           setProduct(data.product);
           setRelated(data.related || []);
-          setSelectedSize(data.product.sizes?.[0] || 'Standard');
-          const initialColor = data.product.colors?.[0] || 'Default';
+          const initialVariant = getFirstAvailableVariant(data.product);
+          setSelectedSize(initialVariant.size);
+          const initialColor = initialVariant.color;
           setSelectedColor(initialColor);
           setSelectedImg(getColorImageIndex(data.product, initialColor));
         }
@@ -85,6 +86,7 @@ export default function ProductDetailPage() {
   const remainingUSD = Math.round(product.priceUSD * (1 - depositRate) * qty);
 
   const handlePreorderNow = () => {
+    if (!isVariantAvailable(product, selectedSize, selectedColor)) return;
     setDepositMode(depositChoice);
     addToCart(product, selectedSize, selectedColor, qty);
     navigate('/checkout');
@@ -102,6 +104,7 @@ export default function ProductDetailPage() {
   };
 
   const handleAddToCart = () => {
+    if (!isVariantAvailable(product, selectedSize, selectedColor)) return;
     setDepositMode(depositChoice);
     addToCart(product, selectedSize, selectedColor, qty);
   };
@@ -161,7 +164,7 @@ export default function ProductDetailPage() {
               <div className="p-4 rounded-2xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 space-y-1">
                 <Plane className="w-5 h-5 text-black dark:text-white" />
                 <h5 className="font-bold text-xs uppercase">Air Cargo to Accra</h5>
-                <p className="text-[11px] text-zinc-500">Arrives via flight to Kotoka (KIA) in {product.estimatedDays || '10–18 days'}.</p>
+                <p className="text-[11px] text-zinc-500">Estimated delivery: {product.estimatedDays || '10–18 days'}. Freight is confirmed at checkout.</p>
               </div>
               <div className="p-4 rounded-2xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 space-y-1">
                 <RotateCcw className="w-5 h-5 text-black dark:text-white" />
@@ -267,10 +270,16 @@ export default function ProductDetailPage() {
                 </label>
                 <div className="flex flex-wrap gap-2">
                   {product.sizes.map((s) => (
+                    (() => {
+                      const available = product.colors?.length
+                        ? product.colors.some(color => isVariantAvailable(product, s, color))
+                        : isVariantAvailable(product, s, 'Default');
+                      return (
                     <button
                       key={s}
                       onClick={() => setSelectedSize(s)}
-                      className={`px-4 py-2 rounded-xl text-xs font-bold border transition ${
+                      disabled={!available}
+                      className={`px-4 py-2 rounded-xl text-xs font-bold border transition disabled:opacity-35 disabled:cursor-not-allowed ${
                         selectedSize === s
                           ? 'bg-black text-white dark:bg-white dark:text-black border-black dark:border-white shadow-sm'
                           : 'bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 border-zinc-300 dark:border-zinc-700 hover:border-black'
@@ -278,6 +287,8 @@ export default function ProductDetailPage() {
                     >
                       {s}
                     </button>
+                      );
+                    })()
                   ))}
                 </div>
               </div>
@@ -294,7 +305,10 @@ export default function ProductDetailPage() {
                     <button
                       key={c}
                       onClick={() => selectColor(c)}
-                      className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold border transition ${
+                      disabled={product.sizes?.length
+                        ? !product.sizes.some(size => isVariantAvailable(product, size, c))
+                        : !isVariantAvailable(product, 'Standard', c)}
+                      className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold border transition disabled:opacity-35 disabled:cursor-not-allowed ${
                         selectedColor === c
                           ? 'bg-black text-white dark:bg-white dark:text-black border-black dark:border-white shadow-sm'
                           : 'bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 border-zinc-300 dark:border-zinc-700'
@@ -308,12 +322,17 @@ export default function ProductDetailPage() {
               </div>
             )}
 
+            {!hasAvailableVariant(product) && (
+              <p className="text-sm font-semibold text-red-600">This item is currently unavailable in all sizes and colors.</p>
+            )}
+
             {/* Action Buttons */}
             <div className="space-y-3 pt-2">
               <div className="grid grid-cols-2 gap-3">
                 <button
                   onClick={handleAddToCart}
-                  className="py-3.5 px-6 rounded-full border-2 border-black dark:border-white text-black dark:text-white font-bold text-xs uppercase tracking-wider hover:bg-zinc-100 dark:hover:bg-zinc-800 active:scale-95 transition flex items-center justify-center gap-2"
+                  disabled={!hasAvailableVariant(product) || !isVariantAvailable(product, selectedSize, selectedColor)}
+                  className="py-3.5 px-6 rounded-full border-2 border-black dark:border-white text-black dark:text-white font-bold text-xs uppercase tracking-wider hover:bg-zinc-100 dark:hover:bg-zinc-800 active:scale-95 transition flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   <ShoppingBag className="w-4 h-4" />
                   <span>Add to Cart</span>
@@ -321,7 +340,8 @@ export default function ProductDetailPage() {
 
                 <button
                   onClick={handlePreorderNow}
-                  className="py-3.5 px-6 rounded-full bg-black dark:bg-white text-white dark:text-black font-bold text-xs uppercase tracking-wider hover:opacity-90 active:scale-95 transition shadow-xl flex items-center justify-center gap-2"
+                  disabled={!hasAvailableVariant(product) || !isVariantAvailable(product, selectedSize, selectedColor)}
+                  className="py-3.5 px-6 rounded-full bg-black dark:bg-white text-white dark:text-black font-bold text-xs uppercase tracking-wider hover:opacity-90 active:scale-95 transition shadow-xl flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   <span>Pre-Order Now</span>
                   <ArrowRight className="w-4 h-4" />
