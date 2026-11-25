@@ -7,6 +7,64 @@ const TEMPLATE = [
   'Air Jordan 1 Retro,Nike,Sneakers,High Top,2500,160,35|36|37|38,Chicago Red|White|Black,Chicago colorway,aj1-red.jpg:Chicago Red|aj1-white.jpg:White,10-18 days'
 ].join('\n');
 
+const COLOR_WORDS = new Set([
+  'black', 'white', 'red', 'grey', 'gray', 'blue', 'cream', 'brown', 'green', 'yellow', 'teal',
+  'navy', 'pink', 'purple', 'orange', 'beige', 'tan', 'khaki', 'burgundy', 'maroon', 'silver',
+  'gold', 'charcoal', 'ivory', 'multicolor', 'multi', 'colour', 'color', 'alt'
+]);
+
+function baseProductName(name) {
+  const match = name.trim().match(/^(.*?)\s*\(([^()]*)\)\s*$/);
+  if (!match) return name.trim();
+  const suffixWords = match[2].toLowerCase().match(/[a-z]+/g) || [];
+  const hasColor = suffixWords.some(word => COLOR_WORDS.has(word));
+  return hasColor ? match[1].trim() : name.trim();
+}
+
+function splitList(value) {
+  return (value || '').split('|').map(item => item.trim()).filter(Boolean);
+}
+
+function groupRows(rows) {
+  const groups = new Map();
+  rows.forEach((row, index) => {
+    const name = baseProductName(row.name || '');
+    const key = [row.brand, name, row.category].map(value => (value || '').trim().toLocaleLowerCase()).join('|');
+    if (!groups.has(key)) {
+      groups.set(key, {
+        name,
+        brand: row.brand || 'Luxury Brand',
+        category: row.category,
+        subCategory: row.subcategory || 'General',
+        priceGHS: Number(row.priceghs),
+        priceUSD: row.priceusd ? Number(row.priceusd) : undefined,
+        description: row.description || '',
+        estimatedDays: row.estimateddays || '10–18 Days',
+        sizes: [],
+        colors: [],
+        photos: [],
+        sourceRows: []
+      });
+    }
+    const group = groups.get(key);
+    group.sourceRows.push(index + 2);
+    for (const size of splitList(row.sizes)) {
+      if (!group.sizes.some(existing => existing.toLowerCase() === size.toLowerCase())) group.sizes.push(size);
+    }
+    for (const color of splitList(row.colors)) {
+      if (!group.colors.some(existing => existing.toLowerCase() === color.toLowerCase())) group.colors.push(color);
+    }
+    for (const entry of splitList(row.photos)) {
+      const colon = entry.lastIndexOf(':');
+      const filename = (colon >= 0 ? entry.slice(0, colon) : entry).trim();
+      const color = colon >= 0 ? entry.slice(colon + 1).trim() : '';
+      const photoKey = `${filename.toLowerCase()}|${color.toLowerCase()}`;
+      if (!group.photos.some(photo => photo.key === photoKey)) group.photos.push({ filename, color, key: photoKey });
+    }
+  });
+  return [...groups.values()];
+}
+
 function parseCsv(text) {
   const rows = [];
   let row = [];
@@ -47,6 +105,7 @@ export default function BulkProductImportModal({ token, onClose, onComplete }) {
   const [progress, setProgress] = useState('');
   const [result, setResult] = useState(null);
   const rows = useMemo(() => csvFile ? parseCsv(csvFile.text) : [], [csvFile]);
+  const products = useMemo(() => groupRows(rows), [rows]);
 
   const downloadTemplate = () => {
     const url = URL.createObjectURL(new Blob([TEMPLATE], { type: 'text/csv;charset=utf-8' }));
@@ -77,6 +136,15 @@ export default function BulkProductImportModal({ token, onClose, onComplete }) {
     if (errors.length) { setResult({ errors }); return; }
     if (!rows.length) { setResult({ errors: ['Choose a CSV with at least one product row.'] }); return; }
 
+    const priceConflicts = products.filter(group => {
+      const sourceRows = group.sourceRows.map(rowNumber => rows[rowNumber - 2]);
+      return sourceRows.some(row => Number(row.priceghs) !== group.priceGHS || (row.priceusd ? Number(row.priceusd) : undefined) !== group.priceUSD);
+    });
+    if (priceConflicts.length) {
+      setResult({ errors: priceConflicts.map(group => `Rows ${group.sourceRows.join(', ')} (${group.name}): grouped rows must use the same priceGHS and priceUSD.`) });
+      return;
+    }
+
     setBusy(true);
     setResult(null);
     const uploaded = new Map();
@@ -100,39 +168,35 @@ export default function BulkProductImportModal({ token, onClose, onComplete }) {
         uploaded.set(filename, data.url);
       }
 
-      for (const [index, row] of rows.entries()) {
-        const photos = (row.photos || '').split('|').map(entry => entry.trim()).filter(Boolean).map(entry => {
-          const colon = entry.lastIndexOf(':');
-          const filename = (colon >= 0 ? entry.slice(0, colon) : entry).trim();
-          return { url: uploaded.get(filename.toLowerCase()), color: colon >= 0 ? entry.slice(colon + 1).trim() : '' };
-        });
+      for (const [index, group] of products.entries()) {
+        const photos = group.photos.map(photo => ({ ...photo, url: uploaded.get(photo.filename.toLowerCase()) }));
         if (photos.some(photo => !photo.url)) {
-          failures.push(`Row ${index + 2} (${row.name}): one or more photos could not be uploaded.`);
+          failures.push(`Rows ${group.sourceRows.join(', ')} (${group.name}): one or more photos could not be uploaded.`);
           continue;
         }
 
-        setProgress(`Creating draft ${index + 1} of ${rows.length}: ${row.name}`);
+        setProgress(`Creating draft ${index + 1} of ${products.length}: ${group.name}`);
         const res = await fetch(`${API_BASE_URL}/api/products`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
           body: JSON.stringify({
-            name: row.name,
-            brand: row.brand || 'Luxury Brand',
-            category: row.category,
-            subCategory: row.subcategory || 'General',
-            priceGHS: Number(row.priceghs),
-            priceUSD: row.priceusd ? Number(row.priceusd) : undefined,
-            description: row.description || '',
-            estimatedDays: row.estimateddays || '10–18 Days',
-            sizes: row.sizes ? row.sizes.split('|').map(value => value.trim()).filter(Boolean) : undefined,
-            colors: row.colors ? row.colors.split('|').map(value => value.trim()).filter(Boolean) : undefined,
+            name: group.name,
+            brand: group.brand,
+            category: group.category,
+            subCategory: group.subCategory,
+            priceGHS: group.priceGHS,
+            priceUSD: group.priceUSD,
+            description: group.description,
+            estimatedDays: group.estimatedDays,
+            sizes: group.sizes.length ? group.sizes : undefined,
+            colors: group.colors.length ? group.colors : undefined,
             images: photos.map(photo => photo.url),
             imageColors: photos.map(photo => photo.color),
             visibility: 'draft'
           })
         });
         const data = await res.json();
-        if (!res.ok || !data.success) failures.push(`Row ${index + 2} (${row.name}): ${data.message || 'product was not created'}`);
+        if (!res.ok || !data.success) failures.push(`Rows ${group.sourceRows.join(', ')} (${group.name}): ${data.message || 'product was not created'}`);
         else created += 1;
       }
 
@@ -152,7 +216,7 @@ export default function BulkProductImportModal({ token, onClose, onComplete }) {
         <div className="flex items-start justify-between gap-4">
           <div>
             <h2 className="text-lg font-black text-zinc-900 dark:text-white">Bulk product import</h2>
-            <p className="text-xs text-zinc-500 mt-1">Upload a CSV and matching photos. Products are created as drafts for review.</p>
+            <p className="text-xs text-zinc-500 mt-1">Upload a CSV and matching photos. Rows with the same brand and base name are combined into one draft with color photos.</p>
           </div>
           <button type="button" disabled={busy} onClick={onClose} className="p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 disabled:opacity-40" aria-label="Close">
             <X className="w-4 h-4" />
@@ -179,7 +243,7 @@ export default function BulkProductImportModal({ token, onClose, onComplete }) {
         </label>
 
         <div className="rounded-xl bg-zinc-50 dark:bg-zinc-950 p-3 text-xs text-zinc-600 dark:text-zinc-300">
-          Ready: {rows.length} product rows and {imageFiles.length} selected photos. New products stay hidden until you review and publish them.
+          Ready: {rows.length} CSV rows → {products.length} draft products and {imageFiles.length} selected photos. New products stay hidden until you review and publish them.
         </div>
 
         {progress && <p className="flex items-center gap-2 text-xs font-semibold text-blue-700"><LoaderCircle className="w-4 h-4 animate-spin" />{progress}</p>}
