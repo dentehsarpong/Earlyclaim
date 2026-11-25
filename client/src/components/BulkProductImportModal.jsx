@@ -7,18 +7,9 @@ const TEMPLATE = [
   'Air Jordan 1 Retro,Nike,Sneakers,High Top,2500,160,35|36|37|38,Chicago Red|White|Black,Chicago colorway,aj1-red.jpg:Chicago Red|aj1-white.jpg:White,10-18 days'
 ].join('\n');
 
-const COLOR_WORDS = new Set([
-  'black', 'white', 'red', 'grey', 'gray', 'blue', 'cream', 'brown', 'green', 'yellow', 'teal',
-  'navy', 'pink', 'purple', 'orange', 'beige', 'tan', 'khaki', 'burgundy', 'maroon', 'silver',
-  'gold', 'charcoal', 'ivory', 'multicolor', 'multi', 'colour', 'color', 'alt'
-]);
-
 function baseProductName(name) {
   const match = name.trim().match(/^(.*?)\s*\(([^()]*)\)\s*$/);
-  if (!match) return name.trim();
-  const suffixWords = match[2].toLowerCase().match(/[a-z]+/g) || [];
-  const hasColor = suffixWords.some(word => COLOR_WORDS.has(word));
-  return hasColor ? match[1].trim() : name.trim();
+  return match ? match[1].trim() : name.trim();
 }
 
 function splitList(value) {
@@ -28,11 +19,14 @@ function splitList(value) {
 function groupRows(rows) {
   const groups = new Map();
   rows.forEach((row, index) => {
-    const name = baseProductName(row.name || '');
-    const key = [row.brand, name, row.category].map(value => (value || '').trim().toLocaleLowerCase()).join('|');
+    const originalName = (row.name || '').trim();
+    const baseName = baseProductName(originalName);
+    const key = [row.brand, baseName].map(value => (value || '').trim().toLocaleLowerCase()).join('|');
     if (!groups.has(key)) {
       groups.set(key, {
-        name,
+        name: originalName,
+        baseName,
+        nameVariants: new Set(),
         brand: row.brand || 'Luxury Brand',
         category: row.category,
         subCategory: row.subcategory || 'General',
@@ -47,6 +41,7 @@ function groupRows(rows) {
       });
     }
     const group = groups.get(key);
+    group.nameVariants.add(originalName.toLocaleLowerCase());
     group.sourceRows.push(index + 2);
     for (const size of splitList(row.sizes)) {
       if (!group.sizes.some(existing => existing.toLowerCase() === size.toLowerCase())) group.sizes.push(size);
@@ -62,7 +57,12 @@ function groupRows(rows) {
       if (!group.photos.some(photo => photo.key === photoKey)) group.photos.push({ filename, color, key: photoKey });
     }
   });
-  return [...groups.values()];
+  return [...groups.values()].map(group => {
+    if (group.nameVariants.size > 1) group.name = group.baseName;
+    delete group.baseName;
+    delete group.nameVariants;
+    return group;
+  });
 }
 
 function parseCsv(text) {
@@ -216,7 +216,7 @@ export default function BulkProductImportModal({ token, onClose, onComplete }) {
         <div className="flex items-start justify-between gap-4">
           <div>
             <h2 className="text-lg font-black text-zinc-900 dark:text-white">Bulk product import</h2>
-            <p className="text-xs text-zinc-500 mt-1">Upload a CSV and matching photos. Rows with the same brand and base name are combined into one draft with color photos.</p>
+            <p className="text-xs text-zinc-500 mt-1">Upload a CSV and matching photos. Rows with the same brand and product name are combined into one draft. Parenthesized variants, such as colors, are grouped automatically.</p>
           </div>
           <button type="button" disabled={busy} onClick={onClose} className="p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 disabled:opacity-40" aria-label="Close">
             <X className="w-4 h-4" />
