@@ -37,7 +37,7 @@ import { getVariantKey } from '../utils/productVariants';
 
 const SNEAKER_SIZE_OPTIONS = Array.from({ length: 14 }, (_, index) => String(index + 35));
 const CLOTHING_SIZE_OPTIONS = ['Small', 'Medium', 'Large', 'Extra Large'];
-const recommendedSizes = (category) => category === 'Sneakers'
+const recommendedSizes = (category) => ['Sneakers', 'Slides'].includes(category)
   ? SNEAKER_SIZE_OPTIONS
   : ['Jeans', 'Designer Brands'].includes(category)
     ? CLOTHING_SIZE_OPTIONS
@@ -1986,7 +1986,7 @@ export default function AdminDashboardPage() {
                     className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 p-2.5 rounded-xl text-black dark:text-white"
                   />
                   <p className="mt-1 text-[9px] text-zinc-400">
-                    {prodForm.category === 'Sneakers' ? 'Suggested EU sizes: 35–48.' : ['Jeans', 'Designer Brands'].includes(prodForm.category) ? 'Suggested clothing sizes: Small, Medium, Large, Extra Large.' : 'Enter each available size separated by a comma.'}
+                    {['Sneakers', 'Slides'].includes(prodForm.category) ? 'Suggested EU sizes: 35–48.' : ['Jeans', 'Designer Brands'].includes(prodForm.category) ? 'Suggested clothing sizes: Small, Medium, Large, Extra Large.' : 'Enter each available size separated by a comma.'}
                   </p>
                 </div>
 

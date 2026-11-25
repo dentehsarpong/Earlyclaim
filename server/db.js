@@ -259,6 +259,10 @@ class Database {
               mutated = true;
             }
             const currentSizes = Array.isArray(p.sizes) ? p.sizes : [];
+            if (p.category === 'Slides' && (currentSizes.length !== 14 || currentSizes.some((size, index) => String(size) !== String(index + 35)))) {
+              p.sizes = Array.from({ length: 14 }, (_, index) => String(index + 35));
+              mutated = true;
+            }
             const isSneaker = p.category === 'Sneakers' || /sneaker|trainer|running shoe/i.test(p.name || '');
             const legacySeedSneaker = ['des-002', 'des-003'].includes(p.id) && currentSizes.some(size => /^EU\s/i.test(size));
             if (isSneaker && (currentSizes.some(size => /^US\s/i.test(size)) || legacySeedSneaker)) {

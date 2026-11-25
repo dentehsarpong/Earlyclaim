@@ -320,7 +320,7 @@ router.post('/', requireAdmin, (req, res) => {
       rating: 5.0,
       reviewsCount: 0,
       images: productImages,
-      sizes: Array.isArray(sizes) ? sizes : category === 'Sneakers'
+      sizes: Array.isArray(sizes) ? sizes : ['Sneakers', 'Slides'].includes(category)
         ? Array.from({ length: 14 }, (_, index) => String(index + 35))
         : ['Jeans', 'Designer Brands'].includes(category) ? ['Small', 'Medium', 'Large', 'Extra Large'] : ['One Size'],
       colors: Array.isArray(colors) ? colors : ["Black / White"],

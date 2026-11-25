@@ -266,7 +266,7 @@ export default function ProductDetailPage() {
             {product.sizes && product.sizes.length > 0 && (
               <div>
                 <label className="text-xs font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300 block mb-2">
-                  {product.category === 'Sneakers' || /sneaker/i.test(product.name) ? 'Select EU Size:' : 'Select Size:'} <span className="text-black dark:text-white">{selectedSize}</span>
+                  {['Sneakers', 'Slides'].includes(product.category) || /sneaker/i.test(product.name) ? 'Select EU Size:' : 'Select Size:'} <span className="text-black dark:text-white">{selectedSize}</span>
                 </label>
                 <div className="flex flex-wrap gap-2">
                   {product.sizes.map((s) => (

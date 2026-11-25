@@ -194,7 +194,7 @@ export default function ProductModal({ product, onClose }) {
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <label className="text-xs font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300">
-                      {product.category === 'Sneakers' || /sneaker/i.test(product.name) ? 'EU Size:' : 'Size:'} <span className="text-black dark:text-white">{selectedSize}</span>
+                      {['Sneakers', 'Slides'].includes(product.category) || /sneaker/i.test(product.name) ? 'EU Size:' : 'Size:'} <span className="text-black dark:text-white">{selectedSize}</span>
                     </label>
                   </div>
                   <div className="flex flex-wrap gap-1.5">
